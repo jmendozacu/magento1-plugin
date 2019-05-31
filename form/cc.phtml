@@ -1,0 +1,36 @@
+<?php
+$method_array = $this->getPaymentMethods();
+$api_key = $this->method->getConfigData('api_key');
+$quote = Mage::getModel('checkout/session')->getQuote();
+$quoteData = $quote->getData();
+$grandTotal = $quoteData['grand_total'];
+$currency = $quoteData['base_currency_code'];
+
+?>
+<link rel="stylesheet" href="https://sdk.ceevo.com/ceevo.css">
+
+
+<form id="ceevo-form" action="checkout/onepage/index" method="post">
+<ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>">
+
+<input type="hidden" id="token_hidden_input" name="token_hidden_input">
+<input type="hidden" id="session_hidden_input" name="session_hidden_input">
+<select id="payment_methods" name="paymentMethod">
+    <?php foreach ($this->getPaymentMethods() as $k=>$v): ?>
+        <option value="<?php echo $v ?>"><?php echo $v ?></option>
+    <?php endforeach ?>
+</select>
+<div style="height:30px"></div>
+<div id="wrapper_button"></div>
+
+   
+</ul>
+</form>
+ <script type="text/javascript" src="https://sdk.ceevo.com/ceevo.js"></script>
+
+
+<script>
+  console.log("script executimg")
+  const ceevo = new CeevoPayment({ el: 'div#wrapper_button', APIkey: "<?php echo $api_key;?>",envMode:"DEV", price: "<?php echo $grandTotal;?>", currency: "<?php echo $currency;?>", form: 'form#co-payment-form', tokenInput: 'input#token_hidden_input', sessionInput: 'input#session_hidden_input' });
+  ceevo.render();  
+</script>
