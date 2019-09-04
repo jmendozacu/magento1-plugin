@@ -11,7 +11,7 @@ class Mage_NewModule_Model_Paymentmethodtypes extends Mage_Payment_Model_Method_
     public function toOptionArray()
     {
 
-        $get_data = $this->callAPI('GET', 'https://api.ceevo.com/acquiring/methods', false);
+        $get_data = $this->callAPI('GET', 'https://api.ceevo.com/payment/methods', false);
         $response = json_decode($get_data, true);
         $methods_array = [];
         foreach($response as $methods){
