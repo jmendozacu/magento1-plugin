@@ -55,7 +55,7 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
         $customer = $this->createCustomer($payment);
         if($customer['message'] == "Approved"){
 
-            $banktransactionid = $customer['paymentId']; 
+            $banktransactionid = $customer['payment_id']; 
             
             $payment->setTransactionId($banktransactionid);
             $payment->setParentTransactionId($banktransactionid);
@@ -79,9 +79,9 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
         $billing = $order->getBillingAddress();
     
         $data = array("billing" => array("city" => $billing->getCity(), "country" => $billing->getCountry(),"state" => $billing->getRegion(),"street" => $billing->getStreetLine(1),"zip"=> $billing->getPostcode()),
-                      "email" => $order->getCustomerEmail(),"firstName" => $billing->getFirstname(),"lastName" => $billing->getLastname(),"mobile" => $billing->getTelephone(),"phone" => $billing->getTelephone(),"sex" => "M");  
+                      "email" => $order->getCustomerEmail(),"first_name" => $billing->getFirstname(),"last_name" => $billing->getLastname(),"mobile" => $billing->getTelephone(),"phone" => $billing->getTelephone());  
         $data_string = json_encode($data);
-        $get_data = $this->callAPI('POST', 'https://api.ceevo.com/acquiring/customer', $data_string);
+        $get_data = $this->callAPI('POST', 'https://api.ceevo.com/payment/customer', $data_string);
         $response = json_decode($get_data, true);
         $chargeResponse = $this->chargeApi($payment);
         return $chargeResponse;
@@ -90,9 +90,9 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
     
     function registerAccountToken($customer_registered_id,$order){
     
-        $token_array = array("accountToken" => $order->info['customerToken'],"default" => true);
+        $token_array = array("account_token" => $order->info['customerToken'],"default" => true);
         $token_string = json_encode($token_array);
-        $get_data = $this->callAPI('POST', 'https://api.ceevo.com/acquiring/customer/'.$customer_registered_id, $token_string);
+        $get_data = $this->callAPI('POST', 'https://api.ceevo.com/payment/customer/'.$customer_registered_id, $token_string);
         $response = json_decode($get_data, true);
     
     }
@@ -137,26 +137,26 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
         
         $authorization = "Authorization: Bearer $access_token";
         
-        $charge_api = "https://api.ceevo.com/acquiring/charge"; 
+        $charge_api = "https://api.ceevo.com/payment/charge"; 
             
             $cparam = '{
-                "cartItems": ['.$itemString.'],
+                "cart_items": ['.$itemString.'],
                 "amount": '.$order->getGrandTotal().',
                 "3dsecure": '.$flag.',
                 "mode" : "'.$mode.'",
-                "methodCode":  "'.$_SESSION['paymentMethod'].'",
+                "method_code":  "'.$_SESSION['paymentMethod'].'",
                 "currency": "'.$order->getOrderCurrencyCode().'",
-                "accountToken": "'.$_SESSION['token_hidden_input'].'",
-                "sessionId": "'.$_SESSION['session_hidden_input'].'",
-                "referenceId": "",
-                "statementDescriptor": "",
-                "userEmail": "'.$order->getCustomerEmail().'",
-                "shippingAddress": {
+                "account_token": "'.$_SESSION['token_hidden_input'].'",
+                "session_id": "'.$_SESSION['session_hidden_input'].'",
+                "reference_id": "",
+                "statement_descriptor": "",
+                "user_email": "'.$order->getCustomerEmail().'",
+                "shipping_address": {
                     "city": "'.$billing->getCity().'",
                     "country": "'.$billing->getCountry().'",
                     "state": "'.$billing->getRegion().'",
                     "street": "'.$billing->getStreetLine(1).'",
-                    "zip": "'.$billing->getPostcode().'"
+                    "zip_or_postal": "'.$billing->getPostcode().'"
                 }
             }';
             
@@ -214,5 +214,3 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
         }
     
 }
-
-
