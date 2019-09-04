@@ -6,7 +6,7 @@ Requirements
 
 Magento 1
 
-Note: this module has been tested only with Magento 1 Community Edition, it may not work as intended with Magento 1 Enterprise Edition
+Note: this module has been tested only with Magento 1 Community Edition, it may not work as intended with Magento 1 Enterprise Edition. You also need to install omnipay via composer.
 
 Installation 
 
