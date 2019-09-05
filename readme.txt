@@ -14,5 +14,16 @@ Installation
 2) Copy newmodule.xml into app/etc/modules folder.
 3) copy form folder into app\design\frontend\base\default\template\newmodule (create newmodule folder).
 4) After that you will see the plugin in admin . configure and save  the settings.
+Some ex cmd if using docker:
 
+docker cp magento1-plugin/Mage/. 257da291fcbc:/var/www/html/app/code/local
+docker cp magento1-plugin/NewModule.xml 257da291fcbc:/var/www/html/app/etc/modules
+docker cp magento1-plugin/new/. 257da291fcbc:/var/www/html/app/design/frontend/base/default/template/newmodule
+
+5. check module inside system -> configration -> Advanced -> Disable Module Output
+
+
+      NOTE :  Save config
+
+ 6. Module name Mage_NewModule listed on modules and enable.
 
