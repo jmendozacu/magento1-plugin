@@ -9,8 +9,8 @@ Magento 1
 Note: this module has been tested only with Magento 1 Community Edition, it may not work as intended with Magento 1 Enterprise Edition. You also need to install omnipay via composer.
 
 Installation 
-
-1) Copy folder NewModule into app/code/local folder.
+Create folders local and Mage if not there
+1) Copy folder NewModule into app/code/local/Mage folder.
 2) Copy newmodule.xml into app/etc/modules folder.
 3) copy form folder into app\design\frontend\base\default\template\newmodule (create newmodule folder).
 4) After that you will see the plugin in admin . configure and save  the settings.
