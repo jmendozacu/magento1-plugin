@@ -12,10 +12,13 @@ class Mage_NewModule_Model_Paymentmethodtypes extends Mage_Payment_Model_Method_
     {
 
         $get_data = $this->callAPI('GET', 'https://api.ceevo.com/payment/methods', false);
+
         $response = json_decode($get_data, true);
+        
+        //$response = array(0=>array('title'=>'pay1'),1=>array('title'=>'pay2'));
         $methods_array = [];
         foreach($response as $methods){
-          array_push($methods_array,array('value' => $methods['title'],'label'=> $methods['title']) );
+          array_push($methods_array,array('value' => $methods['method_code'],'label'=> $methods['method_title']) );
   
         }
         return $methods_array;
@@ -45,6 +48,7 @@ class Mage_NewModule_Model_Paymentmethodtypes extends Mage_Payment_Model_Method_
         curl_setopt($curl, CURLOPT_HTTPHEADER, array(
            
            'Content-Type: application/json',
+           'X-CV-APIKey: 553fbbcd-f488-4e97-bf90-ad418a781e62'
         ));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);

@@ -53,9 +53,9 @@
     <frontend>
         <layout>
             <updates>
-                <authorizenet>
+                <newmodule>
                     <file>newmodule.xml</file>
-                </authorizenet>
+                </newmodule>
             </updates>
         </layout>
     </frontend>

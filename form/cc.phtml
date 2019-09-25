@@ -1,36 +1,94 @@
 <?php
-$method_array = $this->getPaymentMethods();
+
 $api_key = $this->method->getConfigData('api_key');
+
+//$method_array = $this->getPaymentMethods($api_key);
+
+//$method_array = array();
 $quote = Mage::getModel('checkout/session')->getQuote();
 $quoteData = $quote->getData();
 $grandTotal = $quoteData['grand_total'];
 $currency = $quoteData['base_currency_code'];
+$modde    =  $this->getConfigData('transaction_mode');
 
 ?>
 <link rel="stylesheet" href="https://sdk.ceevo.com/ceevo.css">
 
 
-<form id="ceevo-form" action="checkout/onepage/index" method="post">
-<ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>">
+<!-- <form id="ceevo-form" action="checkout/onepage/index" method="post">
+ -->
+ <div class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>">
 
-<input type="hidden" id="token_hidden_input" name="token_hidden_input">
-<input type="hidden" id="session_hidden_input" name="session_hidden_input">
-<select id="payment_methods" name="paymentMethod">
-    <?php foreach ($this->getPaymentMethods() as $k=>$v): ?>
-        <option value="<?php echo $v ?>"><?php echo $v ?></option>
-    <?php endforeach ?>
-</select>
-<div style="height:30px"></div>
-<div id="wrapper_button"></div>
+  <input type="hidden" id="token_hidden_input" name="token_hidden_input">
+  <input type="hidden" id="session_hidden_input" name="session_hidden_input">
+  <input type="hidden" id="method_code" name="method_code">
+  <input type="hidden" id="3dsecure" name="3dsecure" value="false">
+ 
+   <div id='errorDiv' class="error-msg"></div>
+   <div>
+      <div id="resultDiv"></div>
+  </div>
+  <button type="button" id="payCC" class="button"><span><span>Add Card</span></span></button>
+  <script type="text/javascript">
+    //<![CDATA[
+	console.log("script executimg");
 
-   
-</ul>
-</form>
- <script type="text/javascript" src="https://sdk.ceevo.com/ceevo.js"></script>
+
+    var apikey = "<?php echo $api_key;?>";
+    var formId = '#co-payment-form';
+	  var config = {
+		envMode: '<?php $modde; ?>', // LIVE
+		receiveTokensEvent: true // support custom event listener 'receiveTokens' to send tokenise data to merchant. default false.
+	  };
+
+	 var ceevoPayment = new CeevoPayment(apikey, formId, config);
+
+    
+ Event.observe($('payCC'), 'click', toggleCvvToolTip);	
 
 
-<script>
-  console.log("script executimg")
-  const ceevo = new CeevoPayment({ el: 'div#wrapper_button', APIkey: "<?php echo $api_key;?>",envMode:"DEV", price: "<?php echo $grandTotal;?>", currency: "<?php echo $currency;?>", form: 'form#co-payment-form', tokenInput: 'input#token_hidden_input', sessionInput: 'input#session_hidden_input' });
-  ceevo.render();  
+function toggleCvvToolTip()  {
+ 
+    var widget = ceevoPayment.widget();
+ 
+    // old
+		ceevoPayment.setPrice('<?php echo round($grandTotal);?>');
+		ceevoPayment.setCurrency('<?php echo $currency ; ?>');
+		ceevoPayment.open_widget();
+
+ 
+}
+
+        ceevoPayment.addErrorCallBack(function (error) {
+				document.getElementById('errorDiv').innerHTML = '';
+				document.getElementById('errorDiv').innerHTML = error;
+				document.getElementById('resultDiv').innerHTML = '';
+			  });
+
+	  /**
+	  * for receiveTokensEvent is true only
+	  */
+	  // listen custom event when receiveTokensEvent is true
+	    document.getElementById('co-payment-form').addEventListener('receiveTokens', function ({ detail }) {
+				//console.log('form.eventListener', detail);
+				//console.log("test--", detail.card_token)
+				document.getElementById("token_hidden_input").value = detail.card_token;
+				document.getElementById('session_hidden_input').value = detail.session_id;
+				document.getElementById('method_code').value = detail.method_code;
+				
+				//$('payCC').hide();
+				document.getElementById("resultDiv").innerHTML = "Thanks for providing Card info. Please click continue and place your order. Your card will be charged once you complete your order";
+	  })
+
+//});
+
+		
+
+ 
+
+
+    //]]>
 </script>
+</div>
+
+<!-- </form> -->

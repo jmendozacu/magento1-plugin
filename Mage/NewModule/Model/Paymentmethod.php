@@ -13,6 +13,9 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
     protected $_formBlockType = 'newmodule/form_cc';
     protected $_infoBlockType = 'newmodule/info_cc';
     protected $_isInitializeNeeded      = true;
+    protected  $access_token = ''; 
+    
+
 
     public function assignData($data)
     {
@@ -35,7 +38,9 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
             $info->setAdditionalInformation('token_hidden_input', $_POST['token_hidden_input']);
             $info->setAdditionalInformation('session_hidden_input', $_POST['session_hidden_input']);
         }
-       
+        
+        $this->getToken();
+
         return $this;
     }
 
@@ -52,10 +57,10 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
 
         $amount = $order->getTotalDue();
 
-        $customer = $this->createCustomer($payment);
-        if($customer['message'] == "Approved"){
+        $transID = $this->createCustomer($payment);
+        if(!empty($transID)){
 
-            $banktransactionid = $customer['payment_id']; 
+            $banktransactionid = $transID; 
             
             $payment->setTransactionId($banktransactionid);
             $payment->setParentTransactionId($banktransactionid);
@@ -67,23 +72,25 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
                 $errorMsg
             );
         }
-      
         
     }
-
- 
 
     function createCustomer($payment){
        
         $order = $payment->getOrder();
         $billing = $order->getBillingAddress();
     
-        $data = array("billing" => array("city" => $billing->getCity(), "country" => $billing->getCountry(),"state" => $billing->getRegion(),"street" => $billing->getStreetLine(1),"zip"=> $billing->getPostcode()),
+        $data = array("billing_address" => array("city" => $billing->getCity(), "country" => $billing->getCountry(),"state" => $billing->getRegion(),"street" => $billing->getCity(),"zip_or_postal"=> $billing->getPostcode()),
                       "email" => $order->getCustomerEmail(),"first_name" => $billing->getFirstname(),"last_name" => $billing->getLastname(),"mobile" => $billing->getTelephone(),"phone" => $billing->getTelephone());  
         $data_string = json_encode($data);
-        $get_data = $this->callAPI('POST', 'https://api.ceevo.com/payment/customer', $data_string);
+       
+        //$get_data = $this->callAPI('POST', 'https://api.ceevo.com/payment/customer', $data_string);
+        //print_r($get_data);
+       
         $response = json_decode($get_data, true);
         $chargeResponse = $this->chargeApi($payment);
+        
+
         return $chargeResponse;
     
     }
@@ -97,10 +104,7 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
     
     }
 
-    function chargeApi($payment){
-
-        $order = $payment->getOrder();
-        $billing = $order->getBillingAddress();
+    function getToken(){
 
         $api = "https://auth.ceevo.com/auth/realms/ceevo-realm/protocol/openid-connect/token"; 
         $param['grant_type'] = "client_credentials"; 
@@ -118,54 +122,88 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($param));
         $res = curl_exec($ch); 
+            
+    
+        $jres = json_decode($res, true);
+        $access_token = $jres['access_token'];
+        $this->access_token  = $access_token;
         
-        // $currencies = new ISOCurrencies();
-        // $moneyParser = new DecimalMoneyParser($currencies);
-        // $money = $moneyParser->parse((string)$order->getGrandTotal(), $order->getOrderCurrencyCode());
-        // $converted_money = $money->getAmount(); // outputs 100000
+    } 
+   
+    function chargeApi($payment){
+    
+        $order = $payment->getOrder();
+        $billing = $order->getBillingAddress();
+
+        //print_r($ order);
+        //print_r($billing->getStreet(0)); 
+
+        
+
+        $apiKey =  $this->getConfigData('api_key');
+        $mode = $this->getConfigData('transaction_mode');
     
         $items_array = [];
         foreach($order->getAllVisibleItems() as $item){
           
-          $item_json = array("item" => $item->getName(),"itemValue" => $item->getPrice());
+          $item_json = array("item" => $item->getName(),"itemValue" =>(string) $item->getPrice());
           array_push($items_array, json_encode($item_json));
         }
         $itemString = implode(',',$items_array);
     
         $jres = json_decode($res, true);
-        $access_token = $jres['access_token'];
+        $access_token = $this->access_token;
         
         $authorization = "Authorization: Bearer $access_token";
-        
+       
         $charge_api = "https://api.ceevo.com/payment/charge"; 
             
-            $cparam = '{
-                "cart_items": ['.$itemString.'],
-                "amount": '.$order->getGrandTotal().',
-                "3dsecure": '.$flag.',
+           
+
+       /* $cparam =         '{"3dsecure": true,
+       "account_token": "'.$_POST['token_hidden_input'].'",
+        "amount": 10,
+        "currency": "EUR",
+        "method_code": "CARDS",
+        "mode": "TEST",
+        "redirect_urls": {
+            "failure_url": "http://localhost:8080/magento/index.php/checkout/onepage/failure/",
+            "success_url": "http://localhost:8080/magento/index.php/checkout/onepage/success/"
+        },
+        "reference_id": "12314",
+        "session_id": "'.$_POST['session_hidden_input'].'",
+        "user_email": "vittt2.corleone@genco.com"}';
+        */
+
+        $x = 5; // Amount of digits
+        $min = pow(10,$x);
+        $max = pow(10,$x+1);
+        $value = rand($min, $max);
+
+      
+        // "currency": "'.$order->getOrderCurrencyCode().'",
+        $cparam = '{"amount": '.$order->getGrandTotal().',
+                "3dsecure": true,
                 "mode" : "'.$mode.'",
-                "method_code":  "'.$_SESSION['paymentMethod'].'",
+                "method_code":  "'.$_POST['method_code'].'",
                 "currency": "'.$order->getOrderCurrencyCode().'",
-                "account_token": "'.$_SESSION['token_hidden_input'].'",
-                "session_id": "'.$_SESSION['session_hidden_input'].'",
-                "reference_id": "",
-                "statement_descriptor": "",
-                "user_email": "'.$order->getCustomerEmail().'",
-                "shipping_address": {
-                    "city": "'.$billing->getCity().'",
-                    "country": "'.$billing->getCountry().'",
-                    "state": "'.$billing->getRegion().'",
-                    "street": "'.$billing->getStreetLine(1).'",
-                    "zip_or_postal": "'.$billing->getPostcode().'"
-                }
-            }';
-            
+                "account_token": "'.$_POST['token_hidden_input'].'",
+                "session_id": "'.$_POST['session_hidden_input'].'",
+                "redirect_urls": {
+                    "failure_url": "http://localhost:8080/magento/index.php/checkout/onepage/failure/",
+                    "success_url": "http://localhost:8080/magento/index.php/checkout/onepage/success/"
+                },
+                "reference_id": "'.$value.'",
+                "user_email": "'.$order->getCustomerEmail().'"}';
+        
+         
             $ch = curl_init(); 
             curl_setopt($ch, CURLOPT_URL,$charge_api); 
             curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+            //curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
             
             curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_HEADER, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $cparam);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                     'Content-Type: application/json; charset=utf-8',
@@ -174,11 +212,46 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
                 )
             );
             $cres = curl_exec($ch); 
-            $charge_response = json_decode($cres, true);
-            return $charge_response;
+
+            $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+            $headers = substr($cres, 0, $header_size);
+            $body = substr($cres, $header_size);
+  
+ 
+            curl_close($ch);
+
+
+            $transactionHeaders = $this->http_parse_headers($headers);
+    
+
+           
+            $transactionId = '';
+            $ThreedURL = ''; 
+             
+            if( $transactionHeaders[0]  == 'HTTP/1.1 201 Created') {
+                
+               $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
+
+             }else if($transactionHeaders[0]  == 'HTTP/1.1 302 Found'){
+                $ThreedURL   = $transactionHeaders['Location'];
+                $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
+                $_SESSION['3durl'] = $ThreedURL;
+                
+             }
+
+          
+            return $transactionId;
         }
 
         function callAPI($method, $url, $data){
+
+            $apiKey =  $this->getConfigData('api_key');
+
+             $access_token = $this->access_token;
+
+        
+             $authorization = "Authorization: Bearer $access_token";
+
             $curl = curl_init();
        
             switch ($method){
@@ -199,18 +272,92 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
        
             // OPTIONS:
             curl_setopt($curl, CURLOPT_URL, $url);
+
+
+            curl_setopt($curl, CURLOPT_HEADER, 1);
             curl_setopt($curl, CURLOPT_HTTPHEADER, array(
        
                'Content-Type: application/json',
+                'Content-Length: ' . strlen($data),
+                //'X-CV-APIKey: 553fbbcd-f488-4e97-bf90-ad418a781e62'
+                
             ));
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
        
             // EXECUTE:
-            $result = curl_exec($curl);
+            $response = curl_exec($curl);
+
+            // Retudn headers seperatly from the Response Body
+              $header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
+              $headers = substr($response, 0, $header_size);
+              $body = substr($response, $header_size);
+  
+curl_close($ch);
+
+header("Content-Type:text/plain; charset=UTF-8");
+echo $headers;
+echo $body;
+
+            // Then, after your curl_exec call:
+//$header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+//$header = substr($result, 0, $header_size);
+//print_r($header);
+//die;
+//$body = substr($result, $header_size);
             if(!$result){die("Connection Failure");}
-            curl_close($curl);
-            return $result;
+            //curl_close($curl);
+            return $body;
         }
+
+
+        function http_parse_headers($raw_headers)
+    {
+        $headers = array();
+        $key = ''; // [+]
+
+        foreach(explode("\n", $raw_headers) as $i => $h)
+        {
+            $h = explode(':', $h, 2);
+
+            if (isset($h[1]))
+            {
+                if (!isset($headers[$h[0]]))
+                    $headers[$h[0]] = trim($h[1]);
+                elseif (is_array($headers[$h[0]]))
+                {
+
+                    // $tmp = array_merge($headers[$h[0]], array(trim($h[1]))); // [-]
+                    // $headers[$h[0]] = $tmp; // [-]
+                    $headers[$h[0]] = array_merge($headers[$h[0]], array(trim($h[1]))); // [+]
+                }
+                else
+                {
+                    // $tmp = array_merge(array($headers[$h[0]]), array(trim($h[1]))); // [-]
+                    // $headers[$h[0]] = $tmp; // [-]
+                    $headers[$h[0]] = array_merge(array($headers[$h[0]]), array(trim($h[1]))); // [+]
+                }
+
+                $key = $h[0]; // [+]
+            }
+            else // [+]
+            { // [+]
+                if (substr($h[0], 0, 1) == "\t") // [+]
+                    $headers[$key] .= "\r\n\t".trim($h[0]); // [+]
+                elseif (!$key) // [+]
+                    $headers[0] = trim($h[0]);trim($h[0]); // [+]
+            } // [+]
+        }
+
+        return $headers;
+    }
+
+    public function getOrderPlaceRedirectUrl()
+    { 
+
+        if(!empty($_SESSION['3durl'])){
+          return $_SESSION['3durl'];
+        }
+    }
     
 }
