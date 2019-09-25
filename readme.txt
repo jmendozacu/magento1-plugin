@@ -12,8 +12,9 @@ Installation
 Create folders local and Mage if not there
 1) Copy folder NewModule into app/code/local/Mage folder.
 2) Copy newmodule.xml into app/etc/modules folder.
-3) copy form folder into app\design\frontend\base\default\template\newmodule (create newmodule folder).
-4) After that you will see the plugin in admin . configure and save  the settings.
+3) Copy form folder into app\design\frontend\base\default\template\newmodule (create newmodule folder).
+4) Copy layout/newmodule.xml file in app\design\frontend\base\default\layout 
+5) After that you will see the plugin in admin . configure and save  the settings.
 Some ex cmd if using docker:
 
 docker cp magento1-plugin/Mage/. 257da291fcbc:/var/www/html/app/code/local
