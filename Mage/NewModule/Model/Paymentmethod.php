@@ -1,8 +1,8 @@
 <?php
 //require_once(__DIR__ . '/vendor/autoload.php');
 
-use Omnipay\Common\CreditCard;
-use Omnipay\Omnipay;
+//use Omnipay\Common\CreditCard;
+//use Omnipay\Omnipay;
  
 /**
 * Our test CC module adapter
@@ -284,7 +284,7 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
                 echo $headers;
                 echo $body;
 
-            /
+           
             if(!$result){die("Connection Failure");}
             //curl_close($curl);
             return $body;
