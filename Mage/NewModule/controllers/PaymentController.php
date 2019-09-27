@@ -23,24 +23,76 @@ class Mage_NewModule_PaymentController extends Mage_Core_Controller_Front_Action
    
 
     public function  successAction()
-    {
-       $response = $this->getRequest()->getPost();//get response
+    { 
 
-       //make another api call here by using curl or whatever
+        $session = Mage::getSingleton('core/session');
 
-       $this->_redirect('checkout/onepage/success');// redirect success page
+        $payload_string = $_POST['payload'];
+        $data = base64_decode($payload_string); 
+        $returnData =  json_decode($data,true);
+
+        $transactionId = $returnData['payment_id'];
+        $orderId = $returnData['reference_id'];
+     
+       
+          /* @var $order Mage_Sales_Model_Order */
+        $order = Mage::getModel('sales/order')->loadByIncrementId($orderId);
+        //create transaction. need for void if amount will not match.
+        $payment = $order->getPayment();
+        $payment->setTransactionId($transactionId)
+            ->setParentTransactionId(null)
+            ->setIsTransactionClosed(0);
+
+        $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
+
+        $order->setData('state', "complete");
+        $order->setStatus("complete");       
+        $order->save();
+
+      
+        $order->sendNewOrderEmail();
+        
+
+         Mage::getModel('sales/quote')
+                ->load($order->getQuoteId())
+                ->setIsActive(false)
+                ->save();
+       
+
+         $this->_redirect('checkout/onepage/success');// redirect success page
+      
     }
 
 
-    public function  failureAction()
+    public function failureAction()
     {
-       $response = $this->getRequest()->getPost();//get response
+        $session = Mage::getSingleton('core/session');
 
-       //make another api call here by using curl or whatever
+        $payload_string = $_POST['payload'];
+        $data = base64_decode($payload_string); 
+        $returnData =  json_decode($data,true);
 
-       $this->_redirect('checkout/onepage/error');// redirect success page
+        $transactionId = $returnData['payment_id'];
+        $orderId = $returnData['reference_id'];
+        $responseText = $returnData['fraud_check_result']['description'];
+        
+        /* @var $order Mage_Sales_Model_Order */
+        $order = Mage::getModel('sales/order')->loadByIncrementId($orderId);
+           
+           if ($order->getId() &&  $order->getState() == Mage_Sales_Model_Order::STATE_PENDING_PAYMENT) {
+                //operate with order
+                 
+
+                $payment = $order->getPayment();
+                $payment->setTransactionId(null)
+                    ->setParentTransactionId($transactionId);
+
+                //$order->registerCancellation($responseText)
+                   // ->save();
+                
+            } 
+
+        $this->_redirect('checkout/onepage/failure');              
     }
-
-
-    
+  
 }
