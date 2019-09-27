@@ -43,16 +43,19 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
 
         return $this;
     }
-
+   
     public function initialize($paymentAction, $stateObject)
     {
+      
+       
         $state = Mage_Sales_Model_Order::STATE_PENDING_PAYMENT;
         $stateObject->setState($state);
         $stateObject->setStatus('pending_payment');
         $stateObject->setIsNotified(false);
-    
+        
         $payment = $this->getInfoInstance();
         $order = $payment->getOrder();
+
         $order->save();
 
         $amount = $order->getTotalDue();
@@ -65,6 +68,7 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
             $payment->setTransactionId($banktransactionid);
             $payment->setParentTransactionId($banktransactionid);
             $payment->setIsTransactionClosed(false);
+            $payment->setTransactionAdditionalInfo($_POST['method_code']);
             
         }else{
             $errorMsg = $this->_getHelper()->__('Error in processing payment.');
@@ -134,11 +138,10 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
     
         $order = $payment->getOrder();
         $billing = $order->getBillingAddress();
-
-        //print_r($ order);
-        //print_r($billing->getStreet(0)); 
-
-        
+       
+        $ord =  $order->getId();
+        $orde = Mage::getModel('sales/order')->load($ord);
+        $orderId =  $orde->getIncrementId();
 
         $apiKey =  $this->getConfigData('api_key');
         $mode = $this->getConfigData('transaction_mode');
@@ -159,44 +162,26 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
         $charge_api = "https://api.ceevo.com/payment/charge"; 
             
            
+        
+        $successURL = Mage::getUrl('newmodule/payment/success', array('_secure' => false));
 
-       /* $cparam =         '{"3dsecure": true,
-       "account_token": "'.$_POST['token_hidden_input'].'",
-        "amount": 10,
-        "currency": "EUR",
-        "method_code": "CARDS",
-        "mode": "TEST",
-        "redirect_urls": {
-            "failure_url": "http://localhost:8080/magento/index.php/checkout/onepage/failure/",
-            "success_url": "http://localhost:8080/magento/index.php/checkout/onepage/success/"
-        },
-        "reference_id": "12314",
-        "session_id": "'.$_POST['session_hidden_input'].'",
-        "user_email": "vittt2.corleone@genco.com"}';
-        */
-
-        $x = 5; // Amount of digits
-        $min = pow(10,$x);
-        $max = pow(10,$x+1);
-        $value = rand($min, $max);
-
-      
-        // "currency": "'.$order->getOrderCurrencyCode().'",
+        $failURL = Mage::getUrl('newmodule/payment/failure', array('_secure' => false));      
+        
         $cparam = '{"amount": '.$order->getGrandTotal().',
                 "3dsecure": true,
                 "mode" : "'.$mode.'",
                 "method_code":  "'.$_POST['method_code'].'",
-                "currency": "'.$order->getOrderCurrencyCode().'",
+                "currency": "EUR",
                 "account_token": "'.$_POST['token_hidden_input'].'",
                 "session_id": "'.$_POST['session_hidden_input'].'",
                 "redirect_urls": {
-                    "failure_url": "http://localhost:8080/magento/index.php/checkout/onepage/failure/",
-                    "success_url": "http://localhost:8080/magento/index.php/checkout/onepage/success/"
+                    "failure_url": "'.$failURL.'",
+                    "success_url": "'.$successURL.'"
                 },
-                "reference_id": "'.$value.'",
+                "reference_id": "'.$orderId.'",
                 "user_email": "'.$order->getCustomerEmail().'"}';
         
-         
+            //echo "<pre>"; print_r($cparam); die();
             $ch = curl_init(); 
             curl_setopt($ch, CURLOPT_URL,$charge_api); 
             curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
@@ -293,18 +278,13 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
               $headers = substr($response, 0, $header_size);
               $body = substr($response, $header_size);
   
-curl_close($ch);
+                curl_close($ch);
 
-header("Content-Type:text/plain; charset=UTF-8");
-echo $headers;
-echo $body;
+                header("Content-Type:text/plain; charset=UTF-8");
+                echo $headers;
+                echo $body;
 
-            // Then, after your curl_exec call:
-//$header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-//$header = substr($result, 0, $header_size);
-//print_r($header);
-//die;
-//$body = substr($result, $header_size);
+            /
             if(!$result){die("Connection Failure");}
             //curl_close($curl);
             return $body;
