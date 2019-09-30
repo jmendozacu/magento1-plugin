@@ -14,7 +14,7 @@ Create folders local and Mage if not there
 2) Copy newmodule.xml into app/etc/modules folder.
 3) Copy form folder into app\design\frontend\base\default\template\newmodule (create newmodule folder).
 4) Copy layout/newmodule.xml file in app\design\frontend\base\default\layout 
-5) After that you will see the plugin in admin . configure and save  the settings.
+5) After that you will see the plugin in admin->System->Configuration->Advanced and click on  "Save Config button". After this your module will appear in the list 
 6. Check module inside system -> configration -> Advanced -> Disable Module Output
       NOTE :  Save config
 7. Module name Mage_NewModule listed on modules and enable.
