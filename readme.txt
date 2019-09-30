@@ -18,4 +18,3 @@ Create folders local and Mage if not there
 6. Check module inside system -> configration -> Advanced -> Disable Module Output
       NOTE :  Save config
 7. Module name Mage_NewModule listed on modules and enable.
-
