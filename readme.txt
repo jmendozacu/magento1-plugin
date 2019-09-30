@@ -6,7 +6,7 @@ Requirements
 
 Magento 1
 
-Note: this module has been tested only with Magento 1 Community Edition, it may not work as intended with Magento 1 Enterprise Edition. You also need to install omnipay via composer.
+Note: this module has been tested only with Magento 1 Community Edition, it may not work as intended with Magento 1 Enterprise Edition. 
 
 Installation 
 Create folders local and Mage if not there
@@ -15,16 +15,7 @@ Create folders local and Mage if not there
 3) Copy form folder into app\design\frontend\base\default\template\newmodule (create newmodule folder).
 4) Copy layout/newmodule.xml file in app\design\frontend\base\default\layout 
 5) After that you will see the plugin in admin . configure and save  the settings.
-Some ex cmd if using docker:
-
-docker cp magento1-plugin/Mage/. 257da291fcbc:/var/www/html/app/code/local
-docker cp magento1-plugin/NewModule.xml 257da291fcbc:/var/www/html/app/etc/modules
-docker cp magento1-plugin/new/. 257da291fcbc:/var/www/html/app/design/frontend/base/default/template/newmodule
-
-5. check module inside system -> configration -> Advanced -> Disable Module Output
-
-
+6. Check module inside system -> configration -> Advanced -> Disable Module Output
       NOTE :  Save config
-
- 6. Module name Mage_NewModule listed on modules and enable.
+7. Module name Mage_NewModule listed on modules and enable.
 
