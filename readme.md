@@ -9,6 +9,7 @@ Magento 1
 Note: this module has been tested only with Magento 1 Community Edition, it may not work as intended with Magento 1 Enterprise Edition. 
 
 ## Installation 
+You can either the installation script, or copy the files manually.
 
 ### Running the installation script
 1. Git clone this repository to the web root folder (e.g. **/var/www/html**)
@@ -17,6 +18,8 @@ Note: this module has been tested only with Magento 1 Community Edition, it may 
 `cd magento1-plugin`
 3. Run the installation script
 `./install.sh`
+
+-- or  --
 
 ### Copy files Manually
 1) Under the folder **app/code**, create folders **local** and **Mage** if not there.
