@@ -10,8 +10,8 @@
 class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstract
 {
     protected $_code  = 'newmodule';
-    protected $_formBlockType = 'newmodule/form_cc';
-    protected $_infoBlockType = 'newmodule/info_cc';
+    protected $_formBlockType = 'NewModule/form_cc';
+    protected $_infoBlockType = 'NewModule/info_cc';
     protected $_isInitializeNeeded      = true;
     protected  $access_token = ''; 
     
