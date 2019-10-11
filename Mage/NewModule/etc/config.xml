@@ -3,59 +3,59 @@
     <global>
 <!-- declare model group for new module -->
         <models>
-<!-- model group alias to be used in Mage::getModel('newmodule/...') -->
-            <newmodule>
+<!-- model group alias to be used in Mage::getModel('ceevopayment/...') -->
+            <ceevopayment>
 <!-- base class name for the model group -->
-                <class>Mage_NewModule_Model</class>
-            </newmodule>
+                <class>Mage_CeevoPayment_Model</class>
+            </ceevopayment>
         </models>
  
 <!-- declare resource setup for new module -->
         <resources>
 <!-- resource identifier -->
-            <newmodule_setup>
+            <ceevopayment_setup>
 <!-- specify that this resource is a setup resource and used for upgrades -->
                 <setup>
 <!-- which module to look for install/upgrade files in -->
-                    <module>Mage_NewModule</module>
+                    <module>Mage_CeevoPayment</module>
                 </setup>
 <!-- specify database connection for this resource -->
                 <connection>
 <!-- do not create new connection, use predefined core setup connection -->
                     <use>core_setup</use>
                 </connection>
-            </newmodule_setup>
-            <newmodule_write>
+            </ceevopayment_setup>
+            <ceevopayment_write>
                 <use>core_write</use>
-            </newmodule_write>
-            <newmodule_read>
+            </ceevopayment_write>
+            <ceevopayment_read>
                 <use>core_read</use>
-            </newmodule_read>
+            </ceevopayment_read>
         </resources>
         <helpers>
             <internship_payment>
-                <class>Mage_NewModule_Helper</class>
+                <class>Mage_CeevoPayment_Helper</class>
             </internship_payment>
         </helpers>
         
     </global>
     <frontend>
         <routers>
-            <newmodule>
+            <ceevopayment>
                 <use>standard</use>
                 <args>
-                    <module>Mage_NewModule</module>
-                    <frontName>newmodule</frontName>
+                    <module>Mage_CeevoPayment</module>
+                    <frontName>ceevopayment</frontName>
                 </args>
-            </newmodule>
+            </ceevopayment>
         </routers>  
     </frontend>
     <frontend>
         <layout>
             <updates>
-                <newmodule>
-                    <file>newmodule.xml</file>
-                </newmodule>
+                <ceevopayment>
+                    <file>ceevopayment.xml</file>
+                </ceevopayment>
             </updates>
         </layout>
     </frontend>
@@ -64,19 +64,19 @@
     <default>
 <!-- 'payment' configuration section (tab) -->
         <payment>
-<!-- 'newmodule' configuration group (fieldset) -->
-            <newmodule>
+<!-- 'ceevopayment' configuration group (fieldset) -->
+            <ceevopayment>
 <!-- by default this payment method is inactive -->
                 <active>1</active>
 <!-- model to handle logic for this payment method -->
-                <model>newmodule/paymentmethod</model>
+                <model>ceevopayment/paymentmethod</model>
                 <paytype>AE,VI,MC,DI</paytype>
                 <payment_action>authorize</payment_action>
 <!-- order status for new orders paid by this payment method -->
                 <order_status>1</order_status>
 <!-- default title for payment checkout page and order view page -->
-                <title>Cash On Delivery</title>
-            </newmodule>
+                <title>CeevoPayment</title>
+            </ceevopayment>
          </payment>
     </default>
 </config>
