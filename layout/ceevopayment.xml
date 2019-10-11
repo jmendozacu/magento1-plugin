@@ -4,16 +4,15 @@
 	  <block type="core/text" name="google.cdn.ceevo">
       <action method="setText">
         <text>
-           <![CDATA[<script type="text/javascript" src="https://sdk.ceevo.com/ceevo.js"></script>]]>
+           <![CDATA[<script type="text/javascript" src="https://sdk.ceevo.com/ceevo.js"></script>           
+           ]]>
         </text>
       </action>
-   </block>
-	     
+   </block>     
 	 </reference>
-
 	  <checkout_onepage_review>
         <reference name="checkout.onepage.review.info.items.after">
-            <block type="form/cc" name="payment.form.directpost" template="newmodule/form/cc.phtml">
+            <block type="form/cc" name="payment.form.directpost" template="ceevopayment/form/cc.phtml">
                 <action method="setMethodInfo"></action>
             </block>
         </reference>
