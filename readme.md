@@ -23,7 +23,7 @@ You can either the installation script, or copy the files manually.
 
 ### Copy files Manually
 1) Under the folder **app/code**, create folders **local** and **Mage** if not there.
-1) Copy folder **NewModule** into **app/code/local/Mage** folder.
+1) Copy folder **CeevoPayment** into **app/code/local/Mage** folder.
 1) Copy **CeevoPayment.xml** into **app/etc/modules** folder.
 1) Under the folder **/app/design/frontend/base/default/template/**,  create **ceevopayment** folder.
 1) Copy **form** folder into **app/design/frontend/base/default/template/ceevopayment**.
