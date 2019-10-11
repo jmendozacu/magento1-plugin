@@ -3,9 +3,9 @@
 /**
 * Our test CC module adapter
 */
-class Mage_NewModule_Model_Transactiontype extends Mage_Payment_Model_Method_Abstract
+class Mage_CeevoPayment_Model_Transactiontype extends Mage_Payment_Model_Method_Abstract
 {
-    protected $_code  = 'newmodule';
+    protected $_code  = 'ceevopayment';
      
     public function toOptionArray()
     {
@@ -14,8 +14,5 @@ class Mage_NewModule_Model_Transactiontype extends Mage_Payment_Model_Method_Abs
          ['value' => "TEST", 'label' => "TEST"],
          ['value' => "LIVE", 'label' => "LIVE"]
       ];
-    }
-
-    
+    }  
 }
-
