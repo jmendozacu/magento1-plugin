@@ -11,16 +11,16 @@ class Mage_NewModule_Model_Paymentmethodtypes extends Mage_Payment_Model_Method_
     public function toOptionArray()
     {
 
-        $get_data = $this->callAPI('GET', 'https://api.ceevo.com/payment/methods', false);
+        //$get_data = $this->callAPI('GET', 'https://api.ceevo.com/payment/methods', false);
 
-        $response = json_decode($get_data, true);
+        //$response = json_decode($get_data, true);
         
         //$response = array(0=>array('title'=>'pay1'),1=>array('title'=>'pay2'));
         $methods_array = [];
-        foreach($response as $methods){
-          array_push($methods_array,array('value' => $methods['method_code'],'label'=> $methods['method_title']) );
+        //foreach($response as $methods){
+          //array_push($methods_array,array('value' => $methods['method_code'],'label'=> $methods['method_title']) );
   
-        }
+        //}
         return $methods_array;
     }
 
