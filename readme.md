@@ -25,9 +25,9 @@ You can either the installation script, or copy the files manually.
 1) Under the folder **app/code**, create folders **local** and **Mage** if not there.
 1) Copy folder **NewModule** into **app/code/local/Mage** folder.
 1) Copy **NewModule.xml** into **app/etc/modules** folder.
-1) Under the folder **/app/design/frontend/base/default/template/**,  create **newmodule** folder.
-1) Copy **form** folder into **app/design/frontend/base/default/template/newmodule**.
-1) Copy the file **layout/newmodule.xml** to **app\design\frontend\base\default\layout** 
+1) Under the folder **/app/design/frontend/base/default/template/**,  create **NewModule** folder.
+1) Copy **form** folder into **app/design/frontend/base/default/template/NewModule**.
+1) Copy the file **layout/NewModule.xml** to **app\design\frontend\base\default\layout** 
 
 ### Verify Your Installation
 After the files are in place, please go to Magento backend to verify your installation and setup the plugin
