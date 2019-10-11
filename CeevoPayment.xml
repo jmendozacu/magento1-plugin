@@ -1,7 +1,7 @@
 <config>
     <modules>
-<!-- declare Mage_NewModule module -->
-        <Mage_NewModule>
+<!-- declare Mage_CeevoPayment module -->
+        <Mage_CeevoPayment>
 <!-- this is an active module -->
             <active>true</active>
 <!-- this module will be located in app/code/local code pool -->
@@ -12,6 +12,6 @@
             </depends>
 <!-- declare module's version information for database updates -->
             <version>0.1.0</version>
-        </Mage_NewModule>
+        </Mage_CeevoPayment>
     </modules>
 </config>
