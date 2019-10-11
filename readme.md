@@ -40,7 +40,7 @@ After the files are in place, please go to Magento backend to verify your instal
 ![](https://raw.githubusercontent.com/goceevo/magento1-plugin/master/readme_images/Advanced_config.png)
 4. Click **Disable Modules Output** to open it up
 ![](https://raw.githubusercontent.com/goceevo/magento1-plugin/master/readme_images/disable_modules_output.png)
-5. Check if **Mage_NewModule** is there
+5. Check if **Mage_CeevoPayment** is there
 ![](https://raw.githubusercontent.com/goceevo/magento1-plugin/master/readme_images/New_module.png)
 6. Click **Payment Methods** and then **Ceevo Payment** to config your plugin
 ![](https://raw.githubusercontent.com/goceevo/magento1-plugin/master/readme_images/ceevo_payment_method.png)
