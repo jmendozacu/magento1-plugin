@@ -7,16 +7,14 @@
 /**
 * Our test CC module adapter
 */
-class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstract
+class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstract
 {
-    protected $_code  = 'newmodule';
-    protected $_formBlockType = 'NewModule/form_cc';
-    protected $_infoBlockType = 'NewModule/info_cc';
+    protected $_code  = 'ceevopayment';
+    protected $_formBlockType = 'CeevoPayment/form_cc';
+    protected $_infoBlockType = 'CeevoPayment/info_cc';
     protected $_isInitializeNeeded      = true;
     protected  $access_token = ''; 
     
-
-
     public function assignData($data)
     {
         if (!($data instanceof Varien_Object)) {
@@ -163,9 +161,9 @@ class Mage_NewModule_Model_Paymentmethod extends Mage_Payment_Model_Method_Abstr
             
            
         
-        $successURL = Mage::getUrl('newmodule/payment/success', array('_secure' => false));
+        $successURL = Mage::getUrl('ceevopayment/payment/success', array('_secure' => false));
 
-        $failURL = Mage::getUrl('newmodule/payment/failure', array('_secure' => false));      
+        $failURL = Mage::getUrl('ceevopayment/payment/failure', array('_secure' => false));      
         
         $cparam = '{"amount": '.$order->getGrandTotal().',
                 "3dsecure": true,
