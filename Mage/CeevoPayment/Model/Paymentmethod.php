@@ -169,7 +169,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                 "3dsecure": true,
                 "mode" : "'.$mode.'",
                 "method_code":  "'.$_POST['method_code'].'",
-                "currency": "EUR",
+                "currency": "'.$order->getOrderCurrencyCode().'",
                 "account_token": "'.$_POST['token_hidden_input'].'",
                 "session_id": "'.$_POST['session_hidden_input'].'",
                 "redirect_urls": {
