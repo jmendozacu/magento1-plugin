@@ -5,6 +5,7 @@
       <action method="setText">
         <text>
            <![CDATA[<script type="text/javascript" src="https://sdk.ceevo.com/ceevo.js"></script>           
+              <script type="text/javascript" src="/js/ceevo/ceevo_script.js"></script>          
            ]]>
         </text>
       </action>
