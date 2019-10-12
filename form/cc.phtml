@@ -1,4 +1,5 @@
 <?php
+
 $api_key = $this->method->getConfigData('api_key');
 
 //$method_array = $this->getPaymentMethods($api_key);
@@ -8,7 +9,7 @@ $quote = Mage::getModel('checkout/session')->getQuote();
 $quoteData = $quote->getData();
 $grandTotal = $quoteData['grand_total'];
 $currency = $quoteData['base_currency_code'];
-$modde    =  $this->getConfigData('transaction_mode');
+$modde    =  $this->method->getConfigData('transaction_mode');
 
 ?>
 <link rel="stylesheet" href="https://sdk.ceevo.com/ceevo.css">
@@ -22,65 +23,16 @@ $modde    =  $this->getConfigData('transaction_mode');
   <input type="hidden" id="session_hidden_input" name="session_hidden_input">
   <input type="hidden" id="method_code" name="method_code">
   <input type="hidden" id="3dsecure" name="3dsecure" value="false">
- 
+  <input type="hidden" id="apikey" name="apikey" value="<?php echo trim($api_key);?>">
+  <input type="hidden" id="paymode" name="paymode" value="<?php echo $modde; ?>">
+  <input type="hidden" id="idprice" name="idprice" value="<?php echo $grandTotal; ?>"> 
+  <input type="hidden" id="idcurr" name="idcurr" value="<?php echo $currency; ?>">
    <div id='errorDiv' class="error-msg"></div>
    <div>
       <div id="resultDiv"></div>
   </div>
-  <button type="button" id="payCC" class="button"><span><span>Add Card</span></span></button>
-  <script type="text/javascript">
-    //<![CDATA[
-	console.log("script executimg");
-
-
-    var apikey = "<?php echo $api_key;?>";
-    var formId = '#co-payment-form';
-	  var config = {
-		envMode: '<?php $modde; ?>', // LIVE
-		receiveTokensEvent: true // support custom event listener 'receiveTokens' to send tokenise data to merchant. default false.
-	  };
-
-	 var ceevoPayment = new CeevoPayment(apikey, formId, config);
-
-    
- Event.observe($('payCC'), 'click', toggleCvvToolTip);	
-
-
-function toggleCvvToolTip()  {
-
-    var widget = ceevoPayment.widget();
+  
  
-    // old
-		ceevoPayment.setPrice('<?php echo round($grandTotal);?>');
-		ceevoPayment.setCurrency('EUR');
-		ceevoPayment.open_widget();
-
-}
-        ceevoPayment.addErrorCallBack(function (error) {
-				document.getElementById('errorDiv').innerHTML = '';
-				document.getElementById('errorDiv').innerHTML = error;
-				document.getElementById('resultDiv').innerHTML = '';
-			  });
-
-	  /**
-	  * for receiveTokensEvent is true only
-	  */
-	  // listen custom event when receiveTokensEvent is true
-	    document.getElementById('co-payment-form').addEventListener('receiveTokens', function ({ detail }) {
-				//console.log('form.eventListener', detail);
-				//console.log("test--", detail.card_token)
-				document.getElementById("token_hidden_input").value = detail.card_token;
-				document.getElementById('session_hidden_input').value = detail.session_id;
-				document.getElementById('method_code').value = detail.method_code;
-				
-				//$('payCC').hide();
-				document.getElementById("resultDiv").innerHTML = "Thanks for providing Card info. Please click continue and place your order. Your card will be charged once you complete your order";
-	    })
-
-//});
-
-    //]]>
-</script>
 </div>
 
 <!-- </form> -->
