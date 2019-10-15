@@ -86,24 +86,19 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                       "email" => $order->getCustomerEmail(),"first_name" => $billing->getFirstname(),"last_name" => $billing->getLastname(),"mobile" => $billing->getTelephone(),"phone" => $billing->getTelephone());  
         $data_string = json_encode($data);
        
-        //$get_data = $this->callAPI('POST', 'https://api.ceevo.com/payment/customer', $data_string);
-        //print_r($get_data);
+        $customer_id = $this->callAPI('POST', 'https://api.ceevo.com/payment/customer', $data_string);
        
-        $response = json_decode($get_data, true);
-        $chargeResponse = $this->chargeApi($payment);
-        
-
-        return $chargeResponse;
-    
+        $this->registerAccountToken($customer_id, $order);
+        $chargeResponse = $this->chargeApi($payment, $customer_id);
+        return $chargeResponse;  
     }
     
     function registerAccountToken($customer_registered_id,$order){
     
-        $token_array = array("account_token" => $order->info['customerToken'],"default" => true);
+        $token_array = array("account_token" => $_POST['token_hidden_input'],"is_default" => true,"verify" => true);
         $token_string = json_encode($token_array);
         $get_data = $this->callAPI('POST', 'https://api.ceevo.com/payment/customer/'.$customer_registered_id, $token_string);
         $response = json_decode($get_data, true);
-    
     }
 
     function getToken(){
@@ -132,7 +127,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         
     } 
    
-    function chargeApi($payment){
+    function chargeApi($payment, $cusId){
     
         $order = $payment->getOrder();
         $billing = $order->getBillingAddress();
@@ -164,12 +159,13 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $successURL = Mage::getUrl('ceevopayment/payment/success', array('_secure' => false));
 
         $failURL = Mage::getUrl('ceevopayment/payment/failure', array('_secure' => false));      
-        
+
         $cparam = '{"amount": '.$order->getGrandTotal().',
                 "3dsecure": true,
                 "mode" : "'.$mode.'",
                 "method_code":  "'.$_POST['method_code'].'",
                 "currency": "'.$order->getOrderCurrencyCode().'",
+                "customer_id": "'.$cusId.'", 
                 "account_token": "'.$_POST['token_hidden_input'].'",
                 "session_id": "'.$_POST['session_hidden_input'].'",
                 "redirect_urls": {
@@ -177,9 +173,15 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                     "success_url": "'.$successURL.'"
                 },
                 "reference_id": "'.$orderId.'",
+                "shipping_address": {
+                    "city": "'.$billing->getCity().'",
+                    "country": "'.$billing->getCountry().'",
+                    "state": "'.$billing->getRegion().'",
+                    "street": "'.$billing->getCity().'",
+                    "zip_or_postal": "'.$billing->getPostcode().'"
+                },
                 "user_email": "'.$order->getCustomerEmail().'"}';
-        
-            //echo "<pre>"; print_r($cparam); die();
+      
             $ch = curl_init(); 
             curl_setopt($ch, CURLOPT_URL,$charge_api); 
             curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
@@ -194,20 +196,15 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                     $authorization
                 )
             );
-            $cres = curl_exec($ch); 
-
+            $cres = curl_exec($ch);
+            
             $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
             $headers = substr($cres, 0, $header_size);
-            $body = substr($cres, $header_size);
-  
- 
+            $body = substr($cres, $header_size); 
             curl_close($ch);
 
-
             $transactionHeaders = $this->http_parse_headers($headers);
-    
-
-           
+          
             $transactionId = '';
             $ThreedURL = ''; 
              
@@ -222,7 +219,6 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                 
              }
 
-          
             return $transactionId;
         }
 
@@ -262,6 +258,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
        
                'Content-Type: application/json',
                 'Content-Length: ' . strlen($data),
+                $authorization
                 //'X-CV-APIKey: 553fbbcd-f488-4e97-bf90-ad418a781e62'
                 
             ));
@@ -276,16 +273,23 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
               $headers = substr($response, 0, $header_size);
               $body = substr($response, $header_size);
   
-                curl_close($ch);
+              curl_close($ch);
 
-                header("Content-Type:text/plain; charset=UTF-8");
-                echo $headers;
-                echo $body;
+              header("Content-Type:text/plain; charset=UTF-8");
+               $transactionHeaders = $this->http_parse_headers($headers);
+ 
+                $cusId = '';
+       
+                if( $transactionHeaders[0]  == 'HTTP/1.1 201 Created') {
+                    
+                  $customerIdurl   = $transactionHeaders['Location'];
+                  $remove_http = str_replace('http://', '', $customerIdurl);
+                    $split_url = explode('?', $remove_http);
+                    $get_page_name = explode('/', $split_url[0]);
+                    $cusId = $get_page_name[4];
+                }
 
-           
-            if(!$result){die("Connection Failure");}
-            //curl_close($curl);
-            return $body;
+            return $cusId;
         }
 
 
@@ -336,6 +340,5 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         if(!empty($_SESSION['3durl'])){
           return $_SESSION['3durl'];
         }
-    }
-    
+    } 
 }
