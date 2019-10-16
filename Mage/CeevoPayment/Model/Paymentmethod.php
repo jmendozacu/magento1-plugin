@@ -160,7 +160,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
 
         $failURL = Mage::getUrl('ceevopayment/payment/failure', array('_secure' => false));      
 
-        $cparam = '{"amount": '.$order->getGrandTotal().',
+        $cparam = '{"amount": '.( $order->getGrandTotal()*100 ).',
                 "3dsecure": true,
                 "mode" : "'.$mode.'",
                 "method_code":  "'.$_POST['method_code'].'",
@@ -181,7 +181,6 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                     "zip_or_postal": "'.$billing->getPostcode().'"
                 },
                 "user_email": "'.$order->getCustomerEmail().'"}';
-      
             $ch = curl_init(); 
             curl_setopt($ch, CURLOPT_URL,$charge_api); 
             curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
@@ -204,7 +203,6 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             curl_close($ch);
 
             $transactionHeaders = $this->http_parse_headers($headers);
-          
             $transactionId = '';
             $ThreedURL = ''; 
              
@@ -277,7 +275,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
 
               header("Content-Type:text/plain; charset=UTF-8");
                $transactionHeaders = $this->http_parse_headers($headers);
- 
+
                 $cusId = '';
        
                 if( $transactionHeaders[0]  == 'HTTP/1.1 201 Created') {
