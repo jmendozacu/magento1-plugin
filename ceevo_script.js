@@ -19,8 +19,13 @@ $(document).on("click",".btn-checkout",function(event)
      var amount = Math.round(price);
      var amountTotal =  String(amount);
      var currecny  = String(curr); 
-    // old
-		ceevoPayment.setPrice(amountTotal);
+    
+        if(document.querySelector('tr.last .price')){
+            var totalAmount = document.querySelector('tr.last .price').innerHTML.replace(/[^0-9.-]+/g,"");
+            amount = Math.round(totalAmount);
+        } 
+    
+		ceevoPayment.setPrice(String(amount));
 		ceevoPayment.setCurrency(currecny);
 		ceevoPayment.open_widget();
 
@@ -34,7 +39,5 @@ $(document).on("click",".btn-checkout",function(event)
 				document.getElementById('method_code').value = detail.method_code;
 				
 				review.save();		
-
-	    });   
-       
+	    });       
  });
