@@ -82,7 +82,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $order = $payment->getOrder();
         $billing = $order->getBillingAddress();
     
-        $data = array("billing_address" => array("city" => $billing->getCity(), "country" => $billing->getCountry(),"state" => $billing->getRegion(),"street" => $billing->getCity(),"zip_or_postal"=> $billing->getPostcode()),
+        $data = array("billing_address" => array("city" => $billing->getCity(), "country" => $billing->getCountry(),"state" => $billing->getRegion(),"street" => $billing->getStreet1(),"zip_or_postal"=> $billing->getPostcode()),
                       "email" => $order->getCustomerEmail(),"first_name" => $billing->getFirstname(),"last_name" => $billing->getLastname(),"mobile" => $billing->getTelephone(),"phone" => $billing->getTelephone());  
         $data_string = json_encode($data);
        
@@ -177,7 +177,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                     "city": "'.$billing->getCity().'",
                     "country": "'.$billing->getCountry().'",
                     "state": "'.$billing->getRegion().'",
-                    "street": "'.$billing->getCity().'",
+                    "street": "'.$billing->getStreet1().'",
                     "zip_or_postal": "'.$billing->getPostcode().'"
                 },
                 "user_email": "'.$order->getCustomerEmail().'"}';
