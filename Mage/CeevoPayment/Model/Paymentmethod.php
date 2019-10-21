@@ -36,7 +36,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             $info->setAdditionalInformation('token_hidden_input', $_POST['token_hidden_input']);
             $info->setAdditionalInformation('session_hidden_input', $_POST['session_hidden_input']);
         }
-        
+        $_SESSION['3durl'] = '';
         $this->getToken();
 
         return $this;
@@ -46,20 +46,20 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
     {
       
        
-        $state = Mage_Sales_Model_Order::STATE_PENDING_PAYMENT;
-        $stateObject->setState($state);
-        $stateObject->setStatus('pending_payment');
-        $stateObject->setIsNotified(false);
-        
+        $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
+       
         $payment = $this->getInfoInstance();
         $order = $payment->getOrder();
 
-        $order->save();
 
         $amount = $order->getTotalDue();
 
         $transID = $this->createCustomer($payment);
+       // $transID = "16535489";
+        
         if(!empty($transID)){
+
+
 
             $banktransactionid = $transID; 
             
@@ -67,6 +67,30 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             $payment->setParentTransactionId($banktransactionid);
             $payment->setIsTransactionClosed(false);
             $payment->setTransactionAdditionalInfo($_POST['method_code']);
+ 
+            if(empty($_SESSION['3durl'])){
+                     
+                     
+                     $message = "Payment completed successfully"; 
+                     $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
+                     $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
+                     $order->setState($orderState, "pending", $message, false);
+
+                     //$order->setStatus("complete");       
+                     $order->save();
+
+                        $order->sendNewOrderEmail();
+        
+
+                         Mage::getModel('sales/quote')
+                                ->load($order->getQuoteId())
+                                ->setIsActive(false)
+                                ->save();           
+                   
+            }else{
+
+                   // $order->save();
+            }
             
         }else{
             $errorMsg = $this->_getHelper()->__('Error in processing payment.');
@@ -181,6 +205,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                     "zip_or_postal": "'.$billing->getPostcode().'"
                 },
                 "user_email": "'.$order->getCustomerEmail().'"}';
+        //print_r($cparam);
             $ch = curl_init(); 
             curl_setopt($ch, CURLOPT_URL,$charge_api); 
             curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
@@ -200,12 +225,14 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
             $headers = substr($cres, 0, $header_size);
             $body = substr($cres, $header_size); 
+        //print_r($headers);
             curl_close($ch);
-
             $transactionHeaders = $this->http_parse_headers($headers);
             $transactionId = '';
             $ThreedURL = ''; 
-             
+            
+        //print_r($transactionHeaders); die();
+
             if( $transactionHeaders[0]  == 'HTTP/1.1 201 Created') {
                 
                $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
