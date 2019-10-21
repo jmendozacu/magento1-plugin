@@ -39,15 +39,22 @@ class Mage_CeevoPayment_PaymentController extends Mage_Core_Controller_Front_Act
         $order = Mage::getModel('sales/order')->loadByIncrementId($orderId);
         //create transaction. need for void if amount will not match.
         $payment = $order->getPayment();
-        $payment->setTransactionId($transactionId)
-            ->setParentTransactionId(null)
-            ->setIsTransactionClosed(0);
+        // $payment->setTransactionId($transactionId)
+        //   ->setParentTransactionId(null)
+        // ->setIsTransactionClosed(0);
 
-        $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
+       // $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
+        $message = "Payment completed successfully"; 
+          
+        $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
+        $order->setState($orderState, "pending", $message, false);
 
-        $order->setData('state', "complete");
-        $order->setStatus("complete");       
+                     //$order->setStatus("complete");       
         $order->save();
+
+        //$order->setData('state', "complete");
+        //$order->setStatus("complete");          
+        //$order->save();
 
       
         $order->sendNewOrderEmail();
