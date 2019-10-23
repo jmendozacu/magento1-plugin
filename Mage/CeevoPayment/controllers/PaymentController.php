@@ -44,18 +44,12 @@ class Mage_CeevoPayment_PaymentController extends Mage_Core_Controller_Front_Act
         // ->setIsTransactionClosed(0);
 
        // $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
-        $message = "Payment completed successfully"; 
+        $message = "Payment completed successfully with transaction id - ".$transactionId; 
           
         $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
         $order->setState($orderState, "pending", $message, false);
-
-                     //$order->setStatus("complete");       
+       
         $order->save();
-
-        //$order->setData('state', "complete");
-        //$order->setStatus("complete");          
-        //$order->save();
-
       
         $order->sendNewOrderEmail();
         
