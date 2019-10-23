@@ -16,11 +16,13 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
     protected  $access_token = ''; 
     
     public function assignData($data)
-    {
+    {   
         if (!($data instanceof Varien_Object)) {
             $data = new Varien_Object($data);
         }
+
         $info = $this->getInfoInstance();
+
         $info->setCheckNo($data->getCheckNo())
             ->setCheckDate($data->getCheckDate());
         return $this;
@@ -37,8 +39,11 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             $info->setAdditionalInformation('session_hidden_input', $_POST['session_hidden_input']);
         }
         $_SESSION['3durl'] = '';
+        $_SESSION['transID'] = '';
+        
         $this->getToken();
 
+        
         return $this;
     }
    
@@ -55,11 +60,9 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $amount = $order->getTotalDue();
 
         $transID = $this->createCustomer($payment);
-       // $transID = "16535489";
+      
         
         if(!empty($transID)){
-
-
 
             $banktransactionid = $transID; 
             
@@ -67,12 +70,12 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             $payment->setParentTransactionId($banktransactionid);
             $payment->setIsTransactionClosed(false);
             $payment->setTransactionAdditionalInfo($_POST['method_code']);
- 
+            $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
             if(empty($_SESSION['3durl'])){
                      
                      
-                     $message = "Payment completed successfully"; 
-                     $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
+                     $message = "Payment completed successfully with Transaction Id -".$transID; 
+                   
                      $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
                      $order->setState($orderState, "pending", $message, false);
 
@@ -89,7 +92,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                    
             }else{
 
-                   // $order->save();
+                   $order->save();
             }
             
         }else{
@@ -177,8 +180,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $authorization = "Authorization: Bearer $access_token";
        
         $charge_api = "https://api.ceevo.com/payment/charge"; 
-            
-           
+
         
         $successURL = Mage::getUrl('ceevopayment/payment/success', array('_secure' => false));
 
@@ -205,7 +207,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                     "zip_or_postal": "'.$billing->getPostcode().'"
                 },
                 "user_email": "'.$order->getCustomerEmail().'"}';
-        //print_r($cparam);
+
             $ch = curl_init(); 
             curl_setopt($ch, CURLOPT_URL,$charge_api); 
             curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
@@ -225,13 +227,11 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
             $headers = substr($cres, 0, $header_size);
             $body = substr($cres, $header_size); 
-        //print_r($headers);
+
             curl_close($ch);
             $transactionHeaders = $this->http_parse_headers($headers);
             $transactionId = '';
             $ThreedURL = ''; 
-            
-        //print_r($transactionHeaders); die();
 
             if( $transactionHeaders[0]  == 'HTTP/1.1 201 Created') {
                 
