@@ -232,12 +232,13 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             $transactionHeaders = $this->http_parse_headers($headers);
             $transactionId = '';
             $ThreedURL = ''; 
+            $arr = explode(' ', $transactionHeaders[0]);
 
-            if( $transactionHeaders[0]  == 'HTTP/1.1 201 Created') {
+            if( $arr[1]  == '201' || $arr[1]  == '200') {
                 
                $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
 
-             }else if($transactionHeaders[0]  == 'HTTP/1.1 302 Found'){
+             }else if($arr[1]  == '301' || $arr[1]  == '302'){
                 $ThreedURL   = $transactionHeaders['Location'];
                 $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
                 $_SESSION['3durl'] = $ThreedURL;
