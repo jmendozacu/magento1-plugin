@@ -188,6 +188,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
 
         $cparam = '{"amount": '.( $order->getGrandTotal()*100 ).',
                 "3dsecure": true,
+                "capture": true,
                 "mode" : "'.$mode.'",
                 "method_code":  "'.$_POST['method_code'].'",
                 "currency": "'.$order->getOrderCurrencyCode().'",
