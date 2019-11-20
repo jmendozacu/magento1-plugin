@@ -165,7 +165,14 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
 
         $apiKey =  $this->getConfigData('api_key');
         $mode = $this->getConfigData('transaction_mode');
-    
+
+        $secure = $this->getConfigData('secureflag');
+        $capture = 'false';
+
+        if($this->getConfigData('transaction_type') == 'SALES')
+          {
+            $capture = 'true';
+          }
         $items_array = [];
         foreach($order->getAllVisibleItems() as $item){
           
@@ -187,8 +194,8 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $failURL = Mage::getUrl('ceevopayment/payment/failure', array('_secure' => false));      
 
         $cparam = '{"amount": '.( $order->getGrandTotal()*100 ).',
-                "3dsecure": true,
-                "capture": true,
+                "capture": "'.$capture.'",
+                "3dsecure": "'.$secure.'",
                 "mode" : "'.$mode.'",
                 "method_code":  "'.$_POST['method_code'].'",
                 "currency": "'.$order->getOrderCurrencyCode().'",
@@ -208,7 +215,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                     "zip_or_postal": "'.$billing->getPostcode().'"
                 },
                 "user_email": "'.$order->getCustomerEmail().'"}';
-
+                
             $ch = curl_init(); 
             curl_setopt($ch, CURLOPT_URL,$charge_api); 
             curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
