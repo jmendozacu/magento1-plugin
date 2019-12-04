@@ -16,7 +16,7 @@ $(document).on("click",".btn-checkout",function(event)
 
 	 var ceevoPayment = new CeevoPayment(apikey, formId, config);
 	 var widget = ceevoPayment.widget();
-     var amount = Math.round(price/100);
+     var amount = Math.round(price);
      var amountTotal =  String(amount);
      var currecny  = String(curr); 
     
