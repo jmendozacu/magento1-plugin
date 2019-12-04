@@ -16,13 +16,13 @@ $(document).on("click",".btn-checkout",function(event)
 
 	 var ceevoPayment = new CeevoPayment(apikey, formId, config);
 	 var widget = ceevoPayment.widget();
-     var amount = Math.round(price);
+     var amount = Math.round(price/100);
      var amountTotal =  String(amount);
      var currecny  = String(curr); 
     
         if(document.querySelector('tr.last .price')){
             var totalAmount = document.querySelector('tr.last .price').innerHTML.replace(/[^0-9.-]+/g,"");
-            amount = Math.round(totalAmount);
+            amount = Math.round(totalAmount/100);
         } 
     
 		ceevoPayment.setPrice(String(amount));
