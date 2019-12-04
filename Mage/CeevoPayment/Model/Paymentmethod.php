@@ -154,8 +154,8 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         
     } 
    
-    function chargeApi($payment, $cusId){
-    
+    function chargeApi($payment, $cusId)
+    {
         $order = $payment->getOrder();
         $billing = $order->getBillingAddress();
        
@@ -182,15 +182,10 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $itemString = implode(',',$items_array);
     
         $jres = json_decode($res, true);
-        $access_token = $this->access_token;
-        
+        $access_token = $this->access_token; 
         $authorization = "Authorization: Bearer $access_token";
-       
-        $charge_api = "https://api.ceevo.com/payment/charge"; 
-
-        
+        $charge_api = "https://api.ceevo.com/payment/charge";    
         $successURL = Mage::getUrl('ceevopayment/payment/success', array('_secure' => false));
-
         $failURL = Mage::getUrl('ceevopayment/payment/failure', array('_secure' => false));      
 
         $cparam = '{"amount": '.( $order->getGrandTotal()*100 ).',
@@ -215,11 +210,12 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                     "zip_or_postal": "'.$billing->getPostcode().'"
                 },
                 "user_email": "'.$order->getCustomerEmail().'"}';
-                
+               
             $ch = curl_init(); 
             curl_setopt($ch, CURLOPT_URL,$charge_api); 
             curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
-            //curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 1);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
             
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_HEADER, 1);
@@ -230,12 +226,12 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                     $authorization
                 )
             );
-            $cres = curl_exec($ch);
-            
+            $cres = curl_exec($ch);      
             $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
             $headers = substr($cres, 0, $header_size);
             $body = substr($cres, $header_size); 
-
+            $jbody = json_decode($body, true);
+            
             curl_close($ch);
             $transactionHeaders = $this->http_parse_headers($headers);
             $transactionId = '';
@@ -246,25 +242,20 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                 
                $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
 
-             }else if($arr[1]  == '301' || $arr[1]  == '302'){
+            }else if($arr[1]  == '301' || $arr[1]  == '302'){
                 $ThreedURL   = $transactionHeaders['Location'];
                 $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
-                $_SESSION['3durl'] = $ThreedURL;
-                
-             }
-
+                $_SESSION['3durl'] = $ThreedURL;      
+            }
+            $transactionId  = $jbody['payment_id'];
             return $transactionId;
         }
 
-        function callAPI($method, $url, $data){
-
+        function callAPI($method, $url, $data)
+        {
             $apiKey =  $this->getConfigData('api_key');
-
-             $access_token = $this->access_token;
-
-        
-             $authorization = "Authorization: Bearer $access_token";
-
+            $access_token = $this->access_token;
+            $authorization = "Authorization: Bearer $access_token";
             $curl = curl_init();
        
             switch ($method){
@@ -285,8 +276,6 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
        
             // OPTIONS:
             curl_setopt($curl, CURLOPT_URL, $url);
-
-
             curl_setopt($curl, CURLOPT_HEADER, 1);
             curl_setopt($curl, CURLOPT_HTTPHEADER, array(
        
@@ -298,7 +287,8 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             ));
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-       
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 1);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
             // EXECUTE:
             $response = curl_exec($curl);
 
