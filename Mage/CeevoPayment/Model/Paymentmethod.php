@@ -193,7 +193,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
 
         $failURL = Mage::getUrl('ceevopayment/payment/failure', array('_secure' => false));      
 
-        $cparam = '{"amount": '.( $order->getGrandTotal()*100 ).',
+        $cparam = '{"amount": '. $order->getGrandTotal() .',
                 "capture": "'.$capture.'",
                 "3dsecure": "'.$secure.'",
                 "mode" : "'.$mode.'",
