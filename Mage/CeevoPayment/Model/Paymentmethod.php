@@ -243,7 +243,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
 
             }else if($arr[1]  == '301' || $arr[1]  == '302'){
-                $ThreedURL   = $transactionHeaders['Location'];
+                $ThreedURL   = $transactionHeaders['Location'] ? $transactionHeaders['Location'] : $transactionHeaders['location'];
                 $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
                 $_SESSION['3durl'] = $ThreedURL;      
             }
@@ -306,7 +306,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
        
                 if( $transactionHeaders[0]  == 'HTTP/1.1 201 Created') {
                     
-                  $customerIdurl   = $transactionHeaders['Location'];
+                  $customerIdurl   = $transactionHeaders['Location'] ? $transactionHeaders['Location'] : $transactionHeaders['location'];
                   $remove_http = str_replace('http://', '', $customerIdurl);
                     $split_url = explode('?', $remove_http);
                     $get_page_name = explode('/', $split_url[0]);
