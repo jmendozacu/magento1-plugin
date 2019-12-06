@@ -24,44 +24,44 @@ class Mage_CeevoPayment_PaymentController extends Mage_Core_Controller_Front_Act
 
     public function  successAction()
     { 
-
         $session = Mage::getSingleton('core/session');
+        $hashKey =  $_SESSION['ceevo_hash_Key'];         
+        $payData = base64_decode(urldecode($_POST['payload']));
+        $HMACSHA256 = urldecode($_POST['HMACSHA256']);
+        $s = hash_hmac('sha256', $payData, $hashKey, true);
+        $checksum = urldecode(base64_encode($s));
 
-        $payload_string = $_POST['payload'];
-        $data = base64_decode($payload_string); 
-        $returnData =  json_decode($data,true);
-
-        $transactionId = $returnData['payment_id'];
-        $orderId = $returnData['reference_id'];
-     
-       
-          /* @var $order Mage_Sales_Model_Order */
-        $order = Mage::getModel('sales/order')->loadByIncrementId($orderId);
-        //create transaction. need for void if amount will not match.
-        $payment = $order->getPayment();
-        // $payment->setTransactionId($transactionId)
-        //   ->setParentTransactionId(null)
-        // ->setIsTransactionClosed(0);
-
-       // $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
-        $message = "Payment completed successfully with transaction id - ".$transactionId; 
+        if($checksum == $HMACSHA256)
+        {
+            $payload_string = $_POST['payload'];
+            $data = base64_decode($payload_string); 
+            $returnData =  json_decode($data,true);
+            $transactionId = $returnData['payment_id'];
+            $orderId = $returnData['reference_id'];
           
-        $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
-        $order->setState($orderState, "pending", $message, false);
-       
-        $order->save();
-      
-        $order->sendNewOrderEmail();
-        
+            /* @var $order Mage_Sales_Model_Order */
+            $order = Mage::getModel('sales/order')->loadByIncrementId($orderId);
+            //create transaction. need for void if amount will not match.
+            $payment = $order->getPayment();
+            // $payment->setTransactionId($transactionId)
+            //   ->setParentTransactionId(null)
+            // ->setIsTransactionClosed(0);
 
-         Mage::getModel('sales/quote')
+            // $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
+            $message = "Payment completed successfully with transaction id - ".$transactionId;              
+            $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
+            $order->setState($orderState, "pending", $message, false);           
+            $order->save();
+          
+            $order->sendNewOrderEmail();
+            Mage::getModel('sales/quote')
                 ->load($order->getQuoteId())
                 ->setIsActive(false)
-                ->save();
-       
-
-         $this->_redirect('checkout/onepage/success');// redirect success page
-      
+                ->save();   
+            $this->_redirect('checkout/onepage/success');// redirect success page
+        }else{
+            $this->_redirect('checkout/onepage/failure');
+        }
     }
 
 
