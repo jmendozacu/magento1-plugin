@@ -41,27 +41,19 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $_SESSION['3durl'] = '';
         $_SESSION['transID'] = '';
         
-        $this->getToken();
-
-        
+        $this->getToken();      
         return $this;
     }
    
     public function initialize($paymentAction, $stateObject)
-    {
-      
-       
+    {     
         $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
        
         $payment = $this->getInfoInstance();
         $order = $payment->getOrder();
-
-
         $amount = $order->getTotalDue();
-
         $transID = $this->createCustomer($payment);
-      
-        
+          
         if(!empty($transID)){
 
             $banktransactionid = $transID; 
@@ -74,21 +66,19 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             if(empty($_SESSION['3durl'])){
                      
                      
-                     $message = "Payment completed successfully with Transaction Id -".$transID; 
+                $message = "Payment completed successfully with Transaction Id -".$transID; 
                    
-                     $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
-                     $order->setState($orderState, "pending", $message, false);
+                $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
+                $order->setState($orderState, "pending", $message, false);
 
-                     //$order->setStatus("complete");       
-                     $order->save();
-
-                        $order->sendNewOrderEmail();
+                //$order->setStatus("complete");       
+                $order->save();
+                $order->sendNewOrderEmail();
         
-
-                         Mage::getModel('sales/quote')
-                                ->load($order->getQuoteId())
-                                ->setIsActive(false)
-                                ->save();           
+                Mage::getModel('sales/quote')
+                        ->load($order->getQuoteId())
+                        ->setIsActive(false)
+                        ->save();           
                    
             }else{
 
@@ -100,19 +90,17 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             Mage::throwException(
                 $errorMsg
             );
-        }
-        
+        }        
     }
 
-    function createCustomer($payment){
-       
+    function createCustomer($payment)
+    {     
         $order = $payment->getOrder();
         $billing = $order->getBillingAddress();
     
-        $data = array("billing_address" => array("city" => $billing->getCity(), "country" => $billing->getCountry(),"state" => $billing->getRegion(),"street" => $billing->getStreet1(),"zip_or_postal"=> $billing->getPostcode()),
-                      "email" => $order->getCustomerEmail(),"first_name" => $billing->getFirstname(),"last_name" => $billing->getLastname(),"mobile" => $billing->getTelephone(),"phone" => $billing->getTelephone());  
+        $data = array("billing_address" => array("city" => $billing->getCity(), "country" => $billing->getCountry(),"state" => $billing->getRegion(),"street" => $billing->getStreet1(),"zip_or_postal"=> $billing->getPostcode()),"email" => $order->getCustomerEmail(),"first_name" => $billing->getFirstname(),"last_name" => $billing->getLastname(),"mobile" => $billing->getTelephone(),"phone" => $billing->getTelephone());  
         $data_string = json_encode($data);
-       
+
         $customer_id = $this->callAPI('POST', 'https://api.ceevo.com/payment/customer', $data_string);
        
         $this->registerAccountToken($customer_id, $order);
@@ -128,8 +116,8 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $response = json_decode($get_data, true);
     }
 
-    function getToken(){
-
+    function getToken()
+    {
         $api = "https://auth.ceevo.com/auth/realms/ceevo-realm/protocol/openid-connect/token"; 
         $param['grant_type'] = "client_credentials"; 
         $param['client_id'] = $this->getConfigData('client_id'); 
@@ -145,27 +133,21 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($param));
-        $res = curl_exec($ch); 
-            
-    
+        $res = curl_exec($ch);     
         $jres = json_decode($res, true);
         $access_token = $jres['access_token'];
-        $this->access_token  = $access_token;
-        
+        $this->access_token  = $access_token;    
     } 
    
     function chargeApi($payment, $cusId)
     {
         $order = $payment->getOrder();
-        $billing = $order->getBillingAddress();
-       
+        $billing = $order->getBillingAddress();       
         $ord =  $order->getId();
         $orde = Mage::getModel('sales/order')->load($ord);
         $orderId =  $orde->getIncrementId();
-
         $apiKey =  $this->getConfigData('api_key');
         $mode = $this->getConfigData('transaction_mode');
-
         $secure = $this->getConfigData('secureflag');
         $capture = 'false';
 
@@ -209,115 +191,113 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                     "street": "'.$billing->getStreet1().'",
                     "zip_or_postal": "'.$billing->getPostcode().'"
                 },
-                "user_email": "'.$order->getCustomerEmail().'"}';
-               
-            $ch = curl_init(); 
-            curl_setopt($ch, CURLOPT_URL,$charge_api); 
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 1);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-            
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_HEADER, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $cparam);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                    'Content-Type: application/json; charset=utf-8',
-                    'Content-Length: ' . strlen($cparam),
-                    $authorization
-                )
-            );
-            $cres = curl_exec($ch);      
-            $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-            $headers = substr($cres, 0, $header_size);
-            $body = substr($cres, $header_size); 
-            $jbody = json_decode($body, true);
-            
-            curl_close($ch);
-            $transactionHeaders = $this->http_parse_headers($headers);
-            $transactionId = '';
-            $ThreedURL = ''; 
-            $arr = explode(' ', $transactionHeaders[0]);
-
-            if( $arr[1]  == '201' || $arr[1]  == '200') {
-                
-               $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
-
-            }else if($arr[1]  == '301' || $arr[1]  == '302'){
-                $ThreedURL   = $transactionHeaders['Location'] ? $transactionHeaders['Location'] : $transactionHeaders['location'];
-                $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
-                $_SESSION['3durl'] = $ThreedURL;      
-            }
-            $transactionId  = $jbody['payment_id'];
-            return $transactionId;
-        }
-
-        function callAPI($method, $url, $data)
-        {
-            $apiKey =  $this->getConfigData('api_key');
-            $access_token = $this->access_token;
-            $authorization = "Authorization: Bearer $access_token";
-            $curl = curl_init();
-       
-            switch ($method){
-               case "POST":
-                  curl_setopt($curl, CURLOPT_POST, 1);
-                  if ($data)
-                     curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-                  break;
-               case "PUT":
-                  curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
-                  if ($data)
-                     curl_setopt($curl, CURLOPT_POSTFIELDS, $data);                                 
-                  break;
-               default:
-                  if ($data)
-                     $url = sprintf("%s?%s", $url, http_build_query($data));
-            }
-       
-            // OPTIONS:
-            curl_setopt($curl, CURLOPT_URL, $url);
-            curl_setopt($curl, CURLOPT_HEADER, 1);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-       
-               'Content-Type: application/json',
-                'Content-Length: ' . strlen($data),
+                "user_email": "'.$order->getCustomerEmail().'"}';    
+        $ch = curl_init(); 
+        curl_setopt($ch, CURLOPT_URL,$charge_api); 
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $cparam);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json; charset=utf-8',
+                'Content-Length: ' . strlen($cparam),
                 $authorization
-                //'X-CV-APIKey: 553fbbcd-f488-4e97-bf90-ad418a781e62'
-                
-            ));
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 1);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
-            // EXECUTE:
-            $response = curl_exec($curl);
+            )
+        );
+        $cres = curl_exec($ch);      
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $headers = substr($cres, 0, $header_size);
+        $body = substr($cres, $header_size); 
+        $jbody = json_decode($body, true);
 
-            // Retudn headers seperatly from the Response Body
-              $header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
-              $headers = substr($response, 0, $header_size);
-              $body = substr($response, $header_size);
-  
-              curl_close($ch);
+        curl_close($ch);
+        $transactionHeaders = $this->http_parse_headers($headers);
+        $transactionId = '';
+        $ThreedURL = ''; 
+        $arr = explode(' ', $transactionHeaders[0]);
 
-              header("Content-Type:text/plain; charset=UTF-8");
-               $transactionHeaders = $this->http_parse_headers($headers);
+        if( $arr[1]  == '201' || $arr[1]  == '200') {
+            
+           $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
 
-                $cusId = '';
-       
-                if( $transactionHeaders[0]  == 'HTTP/1.1 201 Created') {
-                    
-                  $customerIdurl   = $transactionHeaders['Location'] ? $transactionHeaders['Location'] : $transactionHeaders['location'];
-                  $remove_http = str_replace('http://', '', $customerIdurl);
-                    $split_url = explode('?', $remove_http);
-                    $get_page_name = explode('/', $split_url[0]);
-                    $cusId = $get_page_name[4];
-                }
-
-            return $cusId;
+        }else if($arr[1]  == '301' || $arr[1]  == '302'){
+            $ThreedURL   = $transactionHeaders['Location'] ? $transactionHeaders['Location'] : $transactionHeaders['location'];
+            $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
+            $_SESSION['3durl'] = $ThreedURL;      
         }
 
+        $transactionId  = $jbody['payment_id'];
+        $_SESSION['ceevo_hash_Key'] = $jbody['message'];
+        return $transactionId;
+    }
 
-        function http_parse_headers($raw_headers)
+    function callAPI($method, $url, $data)
+    {
+        $apiKey =  $this->getConfigData('api_key');
+        $access_token = $this->access_token;
+        $authorization = "Authorization: Bearer $access_token";
+        $curl = curl_init();
+   
+        switch ($method){
+           case "POST":
+              curl_setopt($curl, CURLOPT_POST, 1);
+              if ($data)
+                 curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+              break;
+           case "PUT":
+              curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+              if ($data)
+                 curl_setopt($curl, CURLOPT_POSTFIELDS, $data);                                 
+              break;
+           default:
+              if ($data)
+                 $url = sprintf("%s?%s", $url, http_build_query($data));
+        }
+   
+        // OPTIONS:
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_HEADER, 1);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+   
+           'Content-Type: application/json',
+            'Content-Length: ' . strlen($data),
+            $authorization
+            //'X-CV-APIKey: 553fbbcd-f488-4e97-bf90-ad418a781e62'
+            
+        ));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 1);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        // EXECUTE:
+        $response = curl_exec($curl);
+
+        // Retudn headers seperatly from the Response Body
+        $header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
+        $headers = substr($response, 0, $header_size);
+        $body = substr($response, $header_size);
+
+        curl_close($ch);
+
+        header("Content-Type:text/plain; charset=UTF-8");
+        $transactionHeaders = $this->http_parse_headers($headers);
+        $cusId = '';
+   
+        if( $transactionHeaders[0]  == 'HTTP/1.1 201 Created') {
+                
+            $customerIdurl   = $transactionHeaders['Location'] ? $transactionHeaders['Location'] : $transactionHeaders['location'];
+            $remove_http = str_replace('http://', '', $customerIdurl);
+            $split_url = explode('?', $remove_http);
+            $get_page_name = explode('/', $split_url[0]);
+            $cusId = $get_page_name[4];
+        }
+        return $cusId;
+    }
+
+    function http_parse_headers($raw_headers)
     {
         $headers = array();
         $key = ''; // [+]
@@ -354,13 +334,11 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                     $headers[0] = trim($h[0]);trim($h[0]); // [+]
             } // [+]
         }
-
         return $headers;
     }
 
     public function getOrderPlaceRedirectUrl()
     { 
-
         if(!empty($_SESSION['3durl'])){
           return $_SESSION['3durl'];
         }
