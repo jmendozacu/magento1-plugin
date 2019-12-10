@@ -64,10 +64,8 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             $payment->setTransactionAdditionalInfo($_POST['method_code']);
             $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
             if(empty($_SESSION['3durl'])){
-                     
-                     
+                            
                 $message = "Payment completed successfully with Transaction Id -".$transID; 
-                   
                 $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
                 $order->setState($orderState, "pending", $message, false);
 
@@ -78,13 +76,11 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                 Mage::getModel('sales/quote')
                         ->load($order->getQuoteId())
                         ->setIsActive(false)
-                        ->save();           
-                   
+                        ->save();                  
             }else{
 
-                   $order->save();
-            }
-            
+                $order->save();
+            }    
         }else{
             $errorMsg = $this->_getHelper()->__('Error in processing payment.');
             Mage::throwException(
@@ -102,7 +98,6 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $data_string = json_encode($data);
 
         $customer_id = $this->callAPI('POST', 'https://api.ceevo.com/payment/customer', $data_string);
-       
         $this->registerAccountToken($customer_id, $order);
         $chargeResponse = $this->chargeApi($payment, $customer_id);
         return $chargeResponse;  
@@ -207,7 +202,10 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                 $authorization
             )
         );
-        $cres = curl_exec($ch);      
+        $cres = curl_exec($ch); 
+        $httpcode = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $locationUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL);
+
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $headers = substr($cres, 0, $header_size);
         $body = substr($cres, $header_size); 
@@ -215,18 +213,10 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
 
         curl_close($ch);
         $transactionHeaders = $this->http_parse_headers($headers);
-        $transactionId = '';
-        $ThreedURL = ''; 
-        $arr = explode(' ', $transactionHeaders[0]);
 
-        if( $arr[1]  == '201' || $arr[1]  == '200') {
-            
-           $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
-
-        }else if($arr[1]  == '301' || $arr[1]  == '302'){
-            $ThreedURL   = $transactionHeaders['Location'] ? $transactionHeaders['Location'] : $transactionHeaders['location'];
-            $transactionId  =  $transactionHeaders['X-Gravitee-Transaction-Id'];
-            $_SESSION['3durl'] = $ThreedURL;      
+        if($httpcode  == '301' || $httpcode  == '302')
+        {
+            $_SESSION['3durl'] = $locationUrl;           
         }
 
         $transactionId  = $jbody['payment_id'];
@@ -276,23 +266,22 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $response = curl_exec($curl);
 
         // Retudn headers seperatly from the Response Body
+        $httpcode = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+        $locationUrl = curl_getinfo($curl, CURLINFO_REDIRECT_URL);
         $header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
         $headers = substr($response, 0, $header_size);
         $body = substr($response, $header_size);
 
-        curl_close($ch);
-
+        curl_close($curl);
         header("Content-Type:text/plain; charset=UTF-8");
         $transactionHeaders = $this->http_parse_headers($headers);
         $cusId = '';
-   
-        if( $transactionHeaders[0]  == 'HTTP/1.1 201 Created') {
+
+        if( $httpcode == '201' ) {
                 
             $customerIdurl   = $transactionHeaders['Location'] ? $transactionHeaders['Location'] : $transactionHeaders['location'];
-            $remove_http = str_replace('http://', '', $customerIdurl);
-            $split_url = explode('?', $remove_http);
-            $get_page_name = explode('/', $split_url[0]);
-            $cusId = $get_page_name[4];
+            $path = parse_url($customerIdurl, PHP_URL_PATH);
+            $cusId = basename($path);
         }
         return $cusId;
     }
