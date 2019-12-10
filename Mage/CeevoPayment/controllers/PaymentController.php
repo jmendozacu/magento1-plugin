@@ -30,15 +30,16 @@ class Mage_CeevoPayment_PaymentController extends Mage_Core_Controller_Front_Act
         $HMACSHA256 = urldecode($_POST['HMACSHA256']);
         $s = hash_hmac('sha256', $payData, $hashKey, true);
         $checksum = urldecode(base64_encode($s));
+        $PaymentData = json_decode(base64_decode($_POST['payload']));
 
-        if($checksum == $HMACSHA256)
-        {
+        if($checksum == $HMACSHA256  && $PaymentData->status == 'SUCCEEDED')
+        {     
             $payload_string = $_POST['payload'];
             $data = base64_decode($payload_string); 
             $returnData =  json_decode($data,true);
             $transactionId = $returnData['payment_id'];
             $orderId = $returnData['reference_id'];
-          
+
             /* @var $order Mage_Sales_Model_Order */
             $order = Mage::getModel('sales/order')->loadByIncrementId($orderId);
             //create transaction. need for void if amount will not match.
@@ -64,7 +65,6 @@ class Mage_CeevoPayment_PaymentController extends Mage_Core_Controller_Front_Act
         }
     }
 
-
     public function failureAction()
     {
         $session = Mage::getSingleton('core/session');
@@ -81,19 +81,15 @@ class Mage_CeevoPayment_PaymentController extends Mage_Core_Controller_Front_Act
         $order = Mage::getModel('sales/order')->loadByIncrementId($orderId);
            
            if ($order->getId() &&  $order->getState() == Mage_Sales_Model_Order::STATE_PENDING_PAYMENT) {
-                //operate with order
-                 
+                //operate with order          
 
                 $payment = $order->getPayment();
                 $payment->setTransactionId(null)
                     ->setParentTransactionId($transactionId);
 
                 //$order->registerCancellation($responseText)
-                   // ->save();
-                
+                   // ->save();        
             } 
-
         $this->_redirect('checkout/onepage/failure');              
-    }
-  
+    } 
 }
