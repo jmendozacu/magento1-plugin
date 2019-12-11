@@ -16,19 +16,19 @@ $(document).on("click",".btn-checkout",function(event)
 
 	 var ceevoPayment = new CeevoPayment(apikey, formId, config);
 	 var widget = ceevoPayment.widget();
-     var amount = Math.round(price/100);
+     var amount = Math.round(price);
      var amountTotal =  String(amount);
      var currecny  = String(curr); 
     
         if(document.querySelector('tr.last .price')){
             var totalAmount = document.querySelector('tr.last .price').innerHTML.replace(/[^0-9.-]+/g,"");
-            amount = Math.round(totalAmount/100);
+            amount = totalAmount;
         } 
-    
-		ceevoPayment.setPrice(String(amount));
+        var total = parseFloat(amount).toFixed(2);
+
+		ceevoPayment.setPrice(String(total));
 		ceevoPayment.setCurrency(currecny);
 		ceevoPayment.open_widget();
-
 
 		 // listen custom event when receiveTokensEvent is true
 	    document.getElementById('co-payment-form').addEventListener('receiveTokens', function ({ detail }) {
