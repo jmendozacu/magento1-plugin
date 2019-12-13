@@ -105,7 +105,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
     
     function registerAccountToken($customer_registered_id,$order){
     
-        $token_array = array("account_token" => $_POST['token_hidden_input'],"is_default" => true,"verify" => true);
+        $token_array = array("account_token" => $_POST['token_hidden_input'],"is_default" => true);
         $token_string = json_encode($token_array);
         $get_data = $this->callAPI('POST', 'https://api.ceevo.com/payment/customer/'.$customer_registered_id, $token_string);
         $response = json_decode($get_data, true);
