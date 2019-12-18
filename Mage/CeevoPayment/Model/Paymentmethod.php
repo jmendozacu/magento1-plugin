@@ -150,15 +150,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
           {
             $capture = 'true';
           }
-        $items_array = [];
-        foreach($order->getAllVisibleItems() as $item){
-          
-          $item_json = array("item" => $item->getName(),"itemValue" =>(string) $item->getPrice());
-          array_push($items_array, json_encode($item_json));
-        }
-        $itemString = implode(',',$items_array);
-    
-        $jres = json_decode($res, true);
+     
         $access_token = $this->access_token; 
         $authorization = "Authorization: Bearer $access_token";
         $charge_api = "https://api.ceevo.com/payment/charge";    
