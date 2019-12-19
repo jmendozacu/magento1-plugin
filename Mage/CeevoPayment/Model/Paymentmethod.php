@@ -135,7 +135,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
     } 
    
     function chargeApi($payment, $cusId)
-    {
+    { 
         $order = $payment->getOrder();
         $billing = $order->getBillingAddress();       
         $ord =  $order->getId();
@@ -150,7 +150,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
           {
             $capture = 'true';
           }
-     
+ 
         $access_token = $this->access_token; 
         $authorization = "Authorization: Bearer $access_token";
         $charge_api = "https://api.ceevo.com/payment/charge";    
@@ -181,12 +181,11 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                     "street": "'.$billing->getStreet1().'",
                     "zip_or_postal": "'.$billing->getPostcode().'"
                 },
-                "user_email": "'.$order->getCustomerEmail().'"}';
-            
+                "user_email": "'.$order->getCustomerEmail().'"}';  
         $ch = curl_init(); 
         curl_setopt($ch, CURLOPT_URL,$charge_api); 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
         
         curl_setopt($ch, CURLOPT_POST, 1);
@@ -201,7 +200,6 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $cres = curl_exec($ch); 
         $httpcode = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         $locationUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL);
-
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $headers = substr($cres, 0, $header_size);
         $body = substr($cres, $header_size); 
@@ -214,19 +212,25 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         {
             $_SESSION['3durl'] = $locationUrl;           
         }
+            
+        if(isset($jbody['payment_id'])){
 
-        $transactionId  = $jbody['payment_id'];
-        $_SESSION['ceevo_hash_Key'] = $jbody['message'];
-        return $transactionId;
+          $transactionId  = $jbody['payment_id'];
+          $_SESSION['ceevo_hash_Key'] = $jbody['message'];
+
+       }else{
+          $transactionId  = '';
+       }  
+        return $transactionId;    
     }
 
     function callAPI($method, $url, $data)
-    {
+    { 
         $apiKey =  $this->getConfigData('api_key');
         $access_token = $this->access_token;
         $authorization = "Authorization: Bearer $access_token";
         $curl = curl_init();
-   
+    
         switch ($method){
            case "POST":
               curl_setopt($curl, CURLOPT_POST, 1);
@@ -256,7 +260,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         ));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 1);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
         // EXECUTE:
         $response = curl_exec($curl);
@@ -271,13 +275,15 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         curl_close($curl);
         header("Content-Type:text/plain; charset=UTF-8");
         $transactionHeaders = $this->http_parse_headers($headers);
-        $cusId = '';
 
+        $cusId = '';
         if( $httpcode == '201' ) {
                 
-            $customerIdurl   = $transactionHeaders['Location'] ? $transactionHeaders['Location'] : $transactionHeaders['location'];
-            $path = parse_url($customerIdurl, PHP_URL_PATH);
-            $cusId = basename($path);
+           if(isset($transactionHeaders['Location'] )){     
+                $customerIdurl   = $transactionHeaders['Location'] ? $transactionHeaders['Location'] : $transactionHeaders['location'];
+                $path = parse_url($customerIdurl, PHP_URL_PATH);
+                $cusId = basename($path);
+            }
         }
         return $cusId;
     }
