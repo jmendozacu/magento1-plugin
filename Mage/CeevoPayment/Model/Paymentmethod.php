@@ -52,23 +52,27 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $payment = $this->getInfoInstance();
         $order = $payment->getOrder();
         $amount = $order->getTotalDue();
-        $transID = $this->createCustomer($payment);
-          
-        if(!empty($transID)){
+        $response = $this->createCustomer($payment);
+   
+        if(!empty($response['transactionId'])){
 
-            $banktransactionid = $transID; 
-            
+            $banktransactionid = $response['transactionId'];     
             $payment->setTransactionId($banktransactionid);
             $payment->setParentTransactionId($banktransactionid);
             $payment->setIsTransactionClosed(false);
             $payment->setTransactionAdditionalInfo($_POST['method_code']);
             $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
-            if(empty($_SESSION['3durl'])){
-                            
-                $message = "Payment completed successfully with Transaction Id -".$transID; 
+
+            if($response['status'] == 'ERROR'){
+                $errorMsg = $this->_getHelper()->__('Error in processing payment.');
+                Mage::throwException(
+                    $errorMsg
+                );
+            }elseif(empty($_SESSION['3durl'])){
+                          
+                $message = "Payment completed successfully with Transaction Id -".$response['transactionId']; 
                 $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
                 $order->setState($orderState, "pending", $message, false);
-
                 //$order->setStatus("complete");       
                 $order->save();
                 $order->sendNewOrderEmail();
@@ -96,7 +100,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
     
         $data = array("billing_address" => array("city" => $billing->getCity(), "country" => $billing->getCountry(),"state" => $billing->getRegion(),"street" => $billing->getStreet1(),"zip_or_postal"=> $billing->getPostcode()),"email" => $order->getCustomerEmail(),"first_name" => $billing->getFirstname(),"last_name" => $billing->getLastname(),"mobile" => $billing->getTelephone(),"phone" => $billing->getTelephone());  
         $data_string = json_encode($data);
-
+        
         $customer_id = $this->callAPI('POST', 'https://api.ceevo.com/payment/customer', $data_string);
         $this->registerAccountToken($customer_id, $order);
         $chargeResponse = $this->chargeApi($payment, $customer_id);
@@ -147,9 +151,9 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $capture = 'false';
 
         if($this->getConfigData('transaction_type') == 'SALES')
-          {
+        {
             $capture = 'true';
-          }
+        }
  
         $access_token = $this->access_token; 
         $authorization = "Authorization: Bearer $access_token";
@@ -182,6 +186,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                     "zip_or_postal": "'.$billing->getPostcode().'"
                 },
                 "user_email": "'.$order->getCustomerEmail().'"}';  
+
         $ch = curl_init(); 
         curl_setopt($ch, CURLOPT_URL,$charge_api); 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
@@ -207,21 +212,33 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
 
         curl_close($ch);
         $transactionHeaders = $this->http_parse_headers($headers);
+        $response = array();
 
         if($httpcode  == '301' || $httpcode  == '302')
         {
             $_SESSION['3durl'] = $locationUrl;           
         }
-            
+        
+        if (isset($jbody['message'])) {
+            $_SESSION['ceevo_hash_Key'] = $jbody['message'];
+
+        }else{
+            $_SESSION['ceevo_hash_Key'] = '';
+        }
+
         if(isset($jbody['payment_id'])){
 
-          $transactionId  = $jbody['payment_id'];
-          $_SESSION['ceevo_hash_Key'] = $jbody['message'];
-
-       }else{
-          $transactionId  = '';
+          $response['transactionId']  = $jbody['payment_id'];
+          
+        }else{
+          $response['transactionId']  = '';
        }  
-        return $transactionId;    
+
+       if(isset($jbody['status'])){
+
+            $response['status'] = $jbody['status'];
+       }
+       return $response;    
     }
 
     function callAPI($method, $url, $data)
