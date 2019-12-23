@@ -63,7 +63,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             $payment->setTransactionAdditionalInfo($_POST['method_code']);
             $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
 
-            if($response['status'] == 'ERROR'){
+            if(isset($response['status']) && $response['status'] == 'ERROR'){
                 $errorMsg = $this->_getHelper()->__('Error in processing payment.');
                 Mage::throwException(
                     $errorMsg
