@@ -219,11 +219,12 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             $_SESSION['3durl'] = $locationUrl;           
         }
         
-        if (isset($jbody['message'])) {
-            $_SESSION['ceevo_hash_Key'] = $jbody['message'];
+        if(isset($jbody['status_code']) && $jbody['status_code'] == 'PENDING') {
 
+            $_SESSION['ceevo_hash_Key'] = $jbody['message'];
         }else{
             $_SESSION['ceevo_hash_Key'] = '';
+            $_SESSION['3durl']          = '';
         }
 
         if(isset($jbody['payment_id'])){
