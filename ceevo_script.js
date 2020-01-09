@@ -21,8 +21,10 @@ $(document).on("click",".btn-checkout",function(event)
      var currecny  = String(curr); 
     
         if(document.querySelector('tr.last .price')){
-            var totalAmount = document.querySelector('tr.last .price').innerHTML.replace(/[^0-9.-]+/g,"");
-            amount = totalAmount;
+			var totalAmount = document.querySelector('tr.last .price').innerHTML;
+			totalAmount = totalAmount.replace(',', ".");
+			// alert(totalAmount);
+            amount = totalAmount.replace(/[^0-9.-]+/g,"");
         } 
         var total = parseFloat(amount).toFixed(2);
 

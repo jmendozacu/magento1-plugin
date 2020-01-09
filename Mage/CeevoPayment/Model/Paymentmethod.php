@@ -162,9 +162,14 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $failURL = Mage::getUrl('ceevopayment/payment/failure', array('_secure' => false));      
 
         $totalAmount = $order->getGrandTotal();
-        $amount =  round($totalAmount,2);
+        if (strstr($totalAmount, ",")){
+            $amount = str_replace(",","",$totalAmount);
+        }
+        else {
+            $amount =  round($totalAmount,2) * 100;
+        }
 
-        $cparam = '{"amount": '.( $amount*100 ).',
+        $cparam = '{"amount": '. $amount .',
                 "capture": "'.$capture.'",
                 "3dsecure": "'.$secure.'",
                 "mode" : "'.$mode.'",
