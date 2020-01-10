@@ -13,21 +13,21 @@ $(document).on("click",".btn-checkout",function(event)
 		envMode: modde, // LIVE
 		receiveTokensEvent: true // support custom event listener 'receiveTokens' to send tokenise data to merchant. default false.
 	  };
-
+	  console.log("price="+price);
 	 var ceevoPayment = new CeevoPayment(apikey, formId, config);
-	 var widget = ceevoPayment.widget();
-     var amount = Math.round(price);
-     var amountTotal =  String(amount);
+	//  var widget = ceevoPayment.widget();
+    //  var amount = Math.round(price);
+    //  var amountTotal =  String(amount);
      var currecny  = String(curr); 
-    
-        if(document.querySelector('tr.last .price')){
-			var totalAmount = document.querySelector('tr.last .price').innerHTML;
-			totalAmount = totalAmount.replace(',', ".");
-			// alert(totalAmount);
-            amount = totalAmount.replace(/[^0-9.-]+/g,"");
-        } 
-        var total = parseFloat(amount).toFixed(2);
-
+	//  console.log("amount="+amount);
+        // if(document.querySelector('tr.last .price')){
+		// 	var totalAmount = document.querySelector('tr.last .price').innerHTML;
+		// 	totalAmount = totalAmount.replace(',', ".");
+		// 	// alert(totalAmount);
+        //     amount = totalAmount.replace(/[^0-9.-]+/g,"");
+        // } 
+        var total = parseFloat(price).toFixed(2);
+		console.log("total="+total);
 		ceevoPayment.setPrice(String(total));
 		ceevoPayment.setCurrency(currecny);
 		ceevoPayment.open_widget();
