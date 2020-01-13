@@ -1,6 +1,8 @@
 $(document).on("click",".btn-checkout",function(event)
 {
-	
+	if (getRadioBoxValue("payment[method]") != "ceevopayment"){
+		return;
+	}
 	window.stop();
 	event.preventDefault();
 	var apikey =  document.getElementById('apikey').value;
@@ -43,3 +45,15 @@ $(document).on("click",".btn-checkout",function(event)
 				review.save();		
 	    });       
  });
+
+ 
+function  getRadioBoxValue(radioName) 
+{ 
+      var obj = document.getElementsByName(radioName);
+         for(i=0; i<obj.length;i++)  {
+         if(obj[i].checked)  { 
+             return  obj[i].value; 
+         } 
+       }     
+       return "undefined";    
+}
