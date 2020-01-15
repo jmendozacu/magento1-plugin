@@ -63,28 +63,50 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             $payment->setTransactionAdditionalInfo($_POST['method_code']);
             $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
 
-            if(isset($response['status']) && $response['status'] == 'ERROR'){
+            if(isset($response['status'])){
+                $message = '';
+                switch ($response['status']){
+                    case "ERROR":
+                        $message = $this->_getHelper()->__('Error in processing payment.');
+                    break;
+                    case 'SUCCEEDED':
+                        $succ_message = "Payment completed successfully with Transaction Id -".$response['transactionId']; 
+                        $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
+                        $order->setState($orderState, "pending", $succ_message, false);
+                        //$order->setStatus("complete");       
+                        $order->save();
+                        $order->sendNewOrderEmail();
+                
+                        Mage::getModel('sales/quote')
+                                ->load($order->getQuoteId())
+                                ->setIsActive(false)
+                                ->save();
+                        break;
+                      case 'PENDING':
+                        $order->save();
+                        break;
+                      case 'CANCEL':      
+                        $message = $this->_getHelper()->__('Failed in processing payment.');
+                        break;
+                      case 'FAILED':
+                        $message = $this->_getHelper()->__('Failed in processing payment.');
+
+                        break;
+                      default:
+                        $message = $this->_getHelper()->__('Error in processing payment.');
+                }
+
+                if($message != '') {
+                    Mage::throwException(
+                        $errorMsg
+                    ); 
+                }
+            } else {
                 $errorMsg = $this->_getHelper()->__('Error in processing payment.');
                 Mage::throwException(
                     $errorMsg
                 );
-            }elseif(empty($_SESSION['3durl'])){
-                          
-                $message = "Payment completed successfully with Transaction Id -".$response['transactionId']; 
-                $orderState = Mage_Sales_Model_Order::STATE_PROCESSING;
-                $order->setState($orderState, "pending", $message, false);
-                //$order->setStatus("complete");       
-                $order->save();
-                $order->sendNewOrderEmail();
-        
-                Mage::getModel('sales/quote')
-                        ->load($order->getQuoteId())
-                        ->setIsActive(false)
-                        ->save();                  
-            }else{
-
-                $order->save();
-            }    
+            }
         }else{
             $errorMsg = $this->_getHelper()->__('Error in processing payment.');
             Mage::throwException(
@@ -225,8 +247,8 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         }
         
         if(isset($jbody['status_code']) && $jbody['status_code'] == 'PENDING') {
-
             $_SESSION['ceevo_hash_Key'] = $jbody['message'];
+            $response['status'] = $jbody['status_code'];
         }else{
             $_SESSION['ceevo_hash_Key'] = '';
             $_SESSION['3durl']          = '';
@@ -241,7 +263,6 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
        }  
 
        if(isset($jbody['status'])){
-
             $response['status'] = $jbody['status'];
        }
        return $response;    
@@ -294,7 +315,13 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
         $headers = substr($response, 0, $header_size);
         $body = substr($response, $header_size);
-
+        if (curl_errno($curl)) {
+            // print_r(curl_error($curl));
+            $errorMsg = $this->_getHelper()->__(curl_error($curl));
+            Mage::throwException(
+                $errorMsg
+            );
+        }
         curl_close($curl);
         header("Content-Type:text/plain; charset=UTF-8");
         $transactionHeaders = $this->http_parse_headers($headers);
