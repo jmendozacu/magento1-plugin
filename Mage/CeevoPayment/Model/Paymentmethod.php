@@ -67,7 +67,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                 $message = '';
                 switch ($response['status']){
                     case "ERROR":
-                        $message = $this->_getHelper()->__('Error in processing payment.');
+                        $message = $this->_getHelper()->__('Error in processing payment.[error code]');
                     break;
                     case 'SUCCEEDED':
                         $succ_message = "Payment completed successfully with Transaction Id -".$response['transactionId']; 
@@ -86,10 +86,10 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                         $order->save();
                         break;
                       case 'CANCEL':      
-                        $message = $this->_getHelper()->__('Failed in processing payment.');
+                        $message = $this->_getHelper()->__('The payment has been cancelled.');
                         break;
                       case 'FAILED':
-                        $message = $this->_getHelper()->__('Failed in processing payment.');
+                        $message = $this->_getHelper()->__('The payment has been declined.');
 
                         break;
                       default:
@@ -98,17 +98,17 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
 
                 if($message != '') {
                     Mage::throwException(
-                        $errorMsg
+                        $message
                     ); 
                 }
             } else {
-                $errorMsg = $this->_getHelper()->__('Error in processing payment.');
+                $errorMsg = $this->_getHelper()->__('Error in processing payment.[empty status]');
                 Mage::throwException(
                     $errorMsg
                 );
             }
         }else{
-            $errorMsg = $this->_getHelper()->__('Error in processing payment.');
+            $errorMsg = $this->_getHelper()->__('Error in processing payment.[acquiring bank error]');
             Mage::throwException(
                 $errorMsg
             );
