@@ -124,8 +124,10 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $data_string = json_encode($data);
         
         $customer_id = $this->callAPI('POST', 'https://api.ceevo.com/payment/customer', $data_string);
+        // print_r("customer_id=".$customer_id);
         $this->registerAccountToken($customer_id, $order);
         $chargeResponse = $this->chargeApi($payment, $customer_id);
+        // print_r("chargeResponse=".$chargeResponse);
         return $chargeResponse;  
     }
     
@@ -134,6 +136,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $token_array = array("account_token" => $_POST['token_hidden_input'],"is_default" => true);
         $token_string = json_encode($token_array);
         $get_data = $this->callAPI('POST', 'https://api.ceevo.com/payment/customer/'.$customer_registered_id, $token_string);
+        
         $response = json_decode($get_data, true);
     }
 
@@ -150,7 +153,9 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         curl_setopt($ch, CURLOPT_URL,$api); 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
         //curl_setopt ($ch, CURLOPT_SSL_VERIFYHOST, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__).'/cacert.pem');
         
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($param));
@@ -217,9 +222,10 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         $ch = curl_init(); 
         curl_setopt($ch, CURLOPT_URL,$charge_api); 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); 
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-        
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__).'/cacert.pem');
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $cparam);
@@ -230,6 +236,7 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             )
         );
         $cres = curl_exec($ch); 
+        // print_r($cres);
         $httpcode = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         $locationUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL);
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
@@ -304,11 +311,13 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
         ));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        // curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+        // curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($curl, CURLOPT_CAINFO, dirname(__FILE__).'/cacert.pem');
         // EXECUTE:
         $response = curl_exec($curl);
-
+        // print_r("response=".$response);
         // Retudn headers seperatly from the Response Body
         $httpcode = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
         $locationUrl = curl_getinfo($curl, CURLINFO_REDIRECT_URL);
