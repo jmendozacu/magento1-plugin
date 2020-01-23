@@ -5,8 +5,10 @@ $api_key = $this->method->getConfigData('api_key');
 //$method_array = $this->getPaymentMethods($api_key);
 
 //$method_array = array();
-$quote = Mage::getModel('checkout/session')->getQuote();
+// $quote = Mage::getModel('checkout/session')->getQuote();
+$quote = Mage::getSingleton('checkout/session')->getQuote();
 $quoteData = $quote->getData();
+
 $grandTotal = $quoteData['grand_total'];
 $currency = $quoteData['base_currency_code'];
 $modde    =  $this->method->getConfigData('transaction_mode');
