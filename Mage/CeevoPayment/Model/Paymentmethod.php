@@ -60,7 +60,8 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             $payment->setTransactionId($banktransactionid);
             $payment->setParentTransactionId($banktransactionid);
             $payment->setIsTransactionClosed(false);
-            $payment->setTransactionAdditionalInfo($_POST['method_code']);
+            // $payment->setTransactionAdditionalInfo($_POST['method_code']);
+            $payment->setTransactionAdditionalInfo($response, $_POST['method_code']);
             $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
 
             if(isset($response['status'])){
