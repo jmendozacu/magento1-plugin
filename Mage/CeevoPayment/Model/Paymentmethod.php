@@ -83,17 +83,19 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
                                 ->setIsActive(false)
                                 ->save();
                         break;
-                      case 'PENDING':
+                    case 'PENDING':
                         $order->save();
                         break;
-                      case 'CANCEL':      
+                    case 'CANCEL':      
                         $message = $this->_getHelper()->__('The payment has been cancelled.');
                         break;
-                      case 'FAILED':
+                    case 'FAILED':
                         $message = $this->_getHelper()->__('The payment has been declined.');
-
                         break;
-                      default:
+                    case 'RISK':
+                        $message = $this->_getHelper()->__('The payment has been declined by risk.');
+                        break;
+                    default:
                         $message = $this->_getHelper()->__('Error in processing payment.');
                 }
 
