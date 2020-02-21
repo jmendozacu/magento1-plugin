@@ -16,7 +16,7 @@ class Mage_CeevoPayment_Model_Paymentmethodtypes extends Mage_Payment_Model_Meth
        // $response = json_decode($get_data, true);
         
         //$response = array(0=>array('title'=>'pay1'),1=>array('title'=>'pay2'));
-        $methods_array = [];
+        $methods_array = array();
         //foreach($response as $methods){
          // array_push($methods_array,array('value' => $methods['method_code'],'label'=> $methods['method_title']) );
   
