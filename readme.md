@@ -8,28 +8,34 @@ Magento 1
 
 Note: this module has been tested only with Magento 1 Community Edition, it may not work as intended with Magento 1 Enterprise Edition. 
 
-## Installation 
-You can either the installation script, or copy the files manually.
+### Instructions need to be follow:- (Kindly add the below files in specified mentioned folder structure)
 
-### Running the installation script
-1. Git clone this repository to the web root folder (e.g. **/var/www/html**)
-`git clone https://github.com/goceevo/magento1-plugin.git`
-2. Go to the plugin folder
-`cd magento1-plugin`
-3. Run the installation script
-`./install.sh`
+Note: ..\ (Paths starts from ROOT directory)
 
--- or  --
+### app Directory:
+..\app\code\local\Mage\CeevoPayment\Block\Form\Cc.php  
+..\app\code\local\Mage\CeevoPayment\Block\Info\Cc.php   
+..\app\code\local\Mage\CeevoPayment\controllers\PaymentController.php 
+..\app\code\local\Mage\CeevoPayment\etc\config.xml 
+..\app\code\local\Mage\CeevoPayment\etc\system.xml
+..\app\code\local\Mage\CeevoPayment\Helper\Data.php  
+..\app\code\local\Mage\CeevoPayment\Model\cacert.pem  
+..\app\code\local\Mage\CeevoPayment\Model\Paymentmethod.php   
+..\app\code\local\Mage\CeevoPayment\Model\Paymentmethodtypes.php   
+..\app\code\local\Mage\CeevoPayment\Model\SecureFlag.php   
+..\app\code\local\Mage\CeevoPayment\Model\Transaction.php   
+..\app\code\local\Mage\CeevoPayment\Model\Transactiontype.php   
+..\app\code\local\Mage\CeevoPayment\sql\newmodule_setup\mysql4-install-0.1.0.php   
+..\app\design\frontend\base\default\layout\ceevopayment.xml   
+..\app\design\frontend\base\default\template\ceevopayment\form\cc.phtml   
+..\app\etc\modules\CeevoPayment.xml   
 
-### Copy files Manually
-1) Under the folder **app/code**, create folders **local** and **Mage** if not there.
-1) Copy folder **CeevoPayment** into **app/code/local/Mage** folder.
-1) Copy **CeevoPayment.xml** into **app/etc/modules** folder.
-1) Under the folder **/app/design/frontend/base/default/template/**,  create **ceevopayment** folder.
-1) Copy **form** folder into **app/design/frontend/base/default/template/ceevopayment**.
-1) Copy the file **layout/ceevopayment.xml** to **app\design\frontend\base\default\layout**
-1) If you are running magento in subfolder like http://localhost/magento then in  file app/design/frontend/base/default/layout/ceevopayment.xml  on line no 8 change script type="text/javascript" src="/js/ceevo/ceevo_script.js"></script> to script type="text/javascript" src="/{subfoldername}/js/ceevo/ceevo_script.js"></script>
-1) Add file ceevo_script.js in /js/ceevo/ folder. You need to create /ceevo folder inside js folder
+### javascript Directory:
+..\js\ceevo\ceevo_script.js  
+
+
+### Modify js file for subfolder
+If you are running magento in subfolder like http://localhost/magento then in  file app/design/frontend/base/default/layout/ceevopayment.xml  on line no 8 change script type="text/javascript" src="/js/ceevo/ceevo_script.js"></script> to script type="text/javascript" src="/{subfoldername}/js/ceevo/ceevo_script.js"></script>
 
 
 ### Verify Your Installation
