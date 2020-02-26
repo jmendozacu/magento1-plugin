@@ -15,9 +15,9 @@ Note: ..\ (Paths starts from ROOT directory)
 ### app Directory:
 ..\app\code\local\Mage\CeevoPayment\Block\Form\Cc.php  
 ..\app\code\local\Mage\CeevoPayment\Block\Info\Cc.php   
-..\app\code\local\Mage\CeevoPayment\controllers\PaymentController.php 
-..\app\code\local\Mage\CeevoPayment\etc\config.xml 
-..\app\code\local\Mage\CeevoPayment\etc\system.xml
+..\app\code\local\Mage\CeevoPayment\controllers\PaymentController.php  
+..\app\code\local\Mage\CeevoPayment\etc\config.xml  
+..\app\code\local\Mage\CeevoPayment\etc\system.xml  
 ..\app\code\local\Mage\CeevoPayment\Helper\Data.php  
 ..\app\code\local\Mage\CeevoPayment\Model\cacert.pem  
 ..\app\code\local\Mage\CeevoPayment\Model\Paymentmethod.php   
