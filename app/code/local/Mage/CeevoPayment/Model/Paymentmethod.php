@@ -162,6 +162,8 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             curl_setopt ($ch, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
         }
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT , 120);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 120);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($param));
         $res = curl_exec($ch);     
@@ -234,6 +236,8 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             curl_setopt ($ch, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
         }
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT , 120);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 120);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $cparam);
@@ -326,6 +330,8 @@ class Mage_CeevoPayment_Model_Paymentmethod extends Mage_Payment_Model_Method_Ab
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
         }
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT , 120);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 120);
         // EXECUTE:
         $response = curl_exec($curl);
         // print_r("response=".$response);
